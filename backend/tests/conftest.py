@@ -61,14 +61,14 @@ def crear_solicitud(equipo, tipo_trabajo, supervisor):
     from apps.operations.models import Solicitud
 
     def _crear(**extra):
-        return Solicitud.objects.create(
-            equipo=equipo,
-            tipo_trabajo=tipo_trabajo,
-            urgencia=Urgencia.objects.get(valor="normal"),
-            fecha_programada=datetime.date(2026, 10, 1),
-            creado_por=supervisor,
-            **extra,
-        )
+        datos = {
+            "equipo": equipo,
+            "tipo_trabajo": tipo_trabajo,
+            "urgencia": Urgencia.objects.get(valor="normal"),
+            "fecha_programada": datetime.date(2026, 10, 1),
+            "creado_por": supervisor,
+        }
+        return Solicitud.objects.create(**{**datos, **extra})
 
     return _crear
 

@@ -969,6 +969,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/planificacion/optimizar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Optimizar
+         * @description Propone rutas para las solicitudes pendientes. No crea nada: el supervisor
+         *     revisa la propuesta y la confirma creando las órdenes (POST /api/ordenes).
+         */
+        post: operations["apps_routing_api_optimizar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planificacion/rutas-del-dia": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Rutas Del Dia
+         * @description Órdenes del día (o con trabajos aún pendientes) con su trazado, para el mapa.
+         */
+        get: operations["apps_routing_api_rutas_del_dia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1916,29 +1957,17 @@ export interface components {
         };
         /** PlanOut */
         PlanOut: {
-            /** Id */
-            id: number;
-            /** Nombre */
-            nombre: string;
-            /**
-             * Fecha Creacion
-             * Format: date-time
-             */
-            fecha_creacion: string;
-            /** Creado Por Id */
-            creado_por_id: number;
-            /** Tiempo De Ejecucion Dias */
-            tiempo_de_ejecucion_dias: number;
-            /** Exclusiones */
-            exclusiones: {
-                [key: string]: unknown;
-            }[];
-            /** Estado */
-            estado: string;
-            /** Estadisticas */
-            estadisticas: {
-                [key: string]: unknown;
-            };
+            sede: components["schemas"]["Punto"];
+            /** Jornada Min */
+            jornada_min: number;
+            /** Hora Inicio */
+            hora_inicio: string | null;
+            /** Fuente Tiempos */
+            fuente_tiempos: string;
+            /** Rutas */
+            rutas: components["schemas"]["RutaOut"][];
+            /** No Asignadas */
+            no_asignadas: components["schemas"]["NoAsignadaOut"][];
         };
         /** MantenimientoOut */
         MantenimientoOut: {
@@ -2266,6 +2295,127 @@ export interface components {
             por_tipo: {
                 [key: string]: number;
             };
+        };
+        /** NoAsignadaOut */
+        NoAsignadaOut: {
+            /** Solicitud Id */
+            solicitud_id: number;
+            /** Display Id */
+            display_id: string;
+            /** Equipo */
+            equipo: string;
+            /** Lat */
+            lat: number;
+            /** Lng */
+            lng: number;
+            /** Urgente */
+            urgente: boolean;
+            /** Motivo */
+            motivo: string;
+        };
+        /** RutaOut */
+        RutaOut: {
+            /** Id */
+            id: string;
+            /** Vehiculos */
+            vehiculos: string[];
+            /** Visitas */
+            visitas: components["schemas"]["VisitaOut"][];
+            /** Minutos Viaje */
+            minutos_viaje: number;
+            /** Minutos Servicio */
+            minutos_servicio: number;
+            /** Minutos Total */
+            minutos_total: number;
+            /** Geometria */
+            geometria: number[][];
+        };
+        /** VisitaOut */
+        VisitaOut: {
+            /** Solicitud Id */
+            solicitud_id: number;
+            /** Display Id */
+            display_id: string;
+            /** Equipo */
+            equipo: string;
+            /** Direccion */
+            direccion: string;
+            /** Lat */
+            lat: number;
+            /** Lng */
+            lng: number;
+            /** Llegada Min */
+            llegada_min: number;
+            /** Servicio Min */
+            servicio_min: number;
+            /** Urgente */
+            urgente: boolean;
+            /** Requiere Canasta */
+            requiere_canasta: boolean;
+        };
+        /** OptimizarIn */
+        OptimizarIn: {
+            /** Fecha */
+            fecha?: string | null;
+            /** Solicitudes */
+            solicitudes?: number[] | null;
+            /** Rutas */
+            rutas: components["schemas"]["RutaIn"][];
+            /**
+             * Tiempo Limite S
+             * @default 10
+             */
+            tiempo_limite_s: number;
+        };
+        /** RutaIn */
+        RutaIn: {
+            /** Id */
+            id: string;
+            /** Vehiculos */
+            vehiculos: string[];
+            /**
+             * Fijas
+             * @default []
+             */
+            fijas: number[];
+        };
+        /** RutaDelDia */
+        RutaDelDia: {
+            /** Orden Id */
+            orden_id: number;
+            /** Display Id */
+            display_id: string;
+            /** Estado General */
+            estado_general: string;
+            /** Placas */
+            placas: string[];
+            /** Tecnicos */
+            tecnicos: string[];
+            /** Trabajos */
+            trabajos: components["schemas"]["TrabajoMapa"][];
+            /** Geometria */
+            geometria: number[][];
+        };
+        /** RutasDelDiaOut */
+        RutasDelDiaOut: {
+            sede: components["schemas"]["Punto"] | null;
+            /** Rutas */
+            rutas: components["schemas"]["RutaDelDia"][];
+        };
+        /** TrabajoMapa */
+        TrabajoMapa: {
+            /** Id */
+            id: number;
+            /** Secuencia */
+            secuencia: number;
+            /** Estado */
+            estado: string;
+            /** Equipo */
+            equipo: string;
+            /** Lat */
+            lat: number;
+            /** Lng */
+            lng: number;
         };
     };
     responses: never;
@@ -3985,6 +4135,52 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EstadisticasTecnicos"];
+                };
+            };
+        };
+    };
+    apps_routing_api_optimizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OptimizarIn"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+        };
+    };
+    apps_routing_api_rutas_del_dia: {
+        parameters: {
+            query?: {
+                fecha?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RutasDelDiaOut"];
                 };
             };
         };

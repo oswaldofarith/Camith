@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.assets",
     "apps.operations",
     "apps.notifications",
+    "apps.routing",
 ]
 
 MIDDLEWARE = [
@@ -179,3 +180,7 @@ LOGGING = {
     "handlers": {"console": {"class": "logging.StreamHandler"}},
     "root": {"handlers": ["console"], "level": env("LOG_LEVEL", default="INFO")},
 }
+
+# --- Rutas y mapas --------------------------------------------------------------
+# Motor de rutas OSRM autoalojado (vacío = tiempos estimados por distancia).
+OSRM_URL = env("OSRM_URL", default="").rstrip("/")

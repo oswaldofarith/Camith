@@ -3430,6 +3430,90 @@
           }
         ]
       }
+    },
+    "/api/planificacion/optimizar": {
+      "post": {
+        "operationId": "apps_routing_api_optimizar",
+        "summary": "Optimizar",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Propone rutas para las solicitudes pendientes. No crea nada: el supervisor\nrevisa la propuesta y la confirma creando las órdenes (POST /api/ordenes).",
+        "tags": [
+          "planificación"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OptimizarIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/planificacion/rutas-del-dia": {
+      "get": {
+        "operationId": "apps_routing_api_rutas_del_dia",
+        "summary": "Rutas Del Dia",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "fecha",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Fecha"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RutasDelDiaOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Órdenes del día (o con trabajos aún pendientes) con su trazado, para el mapa.",
+        "tags": [
+          "planificación"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -6229,54 +6313,50 @@
       },
       "PlanOut": {
         "properties": {
-          "id": {
-            "title": "Id",
+          "sede": {
+            "$ref": "#/components/schemas/Punto"
+          },
+          "jornada_min": {
+            "title": "Jornada Min",
             "type": "integer"
           },
-          "nombre": {
-            "title": "Nombre",
+          "hora_inicio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hora Inicio"
+          },
+          "fuente_tiempos": {
+            "title": "Fuente Tiempos",
             "type": "string"
           },
-          "fecha_creacion": {
-            "format": "date-time",
-            "title": "Fecha Creacion",
-            "type": "string"
-          },
-          "creado_por_id": {
-            "title": "Creado Por Id",
-            "type": "integer"
-          },
-          "tiempo_de_ejecucion_dias": {
-            "title": "Tiempo De Ejecucion Dias",
-            "type": "integer"
-          },
-          "exclusiones": {
+          "rutas": {
             "items": {
-              "additionalProperties": true,
-              "type": "object"
+              "$ref": "#/components/schemas/RutaOut"
             },
-            "title": "Exclusiones",
+            "title": "Rutas",
             "type": "array"
           },
-          "estado": {
-            "title": "Estado",
-            "type": "string"
-          },
-          "estadisticas": {
-            "additionalProperties": true,
-            "title": "Estadisticas",
-            "type": "object"
+          "no_asignadas": {
+            "items": {
+              "$ref": "#/components/schemas/NoAsignadaOut"
+            },
+            "title": "No Asignadas",
+            "type": "array"
           }
         },
         "required": [
-          "id",
-          "nombre",
-          "fecha_creacion",
-          "creado_por_id",
-          "tiempo_de_ejecucion_dias",
-          "exclusiones",
-          "estado",
-          "estadisticas"
+          "sede",
+          "jornada_min",
+          "hora_inicio",
+          "fuente_tiempos",
+          "rutas",
+          "no_asignadas"
         ],
         "title": "PlanOut",
         "type": "object"
@@ -7088,6 +7168,366 @@
           "por_tipo"
         ],
         "title": "FilaTecnico",
+        "type": "object"
+      },
+      "NoAsignadaOut": {
+        "properties": {
+          "solicitud_id": {
+            "title": "Solicitud Id",
+            "type": "integer"
+          },
+          "display_id": {
+            "title": "Display Id",
+            "type": "string"
+          },
+          "equipo": {
+            "title": "Equipo",
+            "type": "string"
+          },
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          },
+          "urgente": {
+            "title": "Urgente",
+            "type": "boolean"
+          },
+          "motivo": {
+            "title": "Motivo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "solicitud_id",
+          "display_id",
+          "equipo",
+          "lat",
+          "lng",
+          "urgente",
+          "motivo"
+        ],
+        "title": "NoAsignadaOut",
+        "type": "object"
+      },
+      "RutaOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "vehiculos": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Vehiculos",
+            "type": "array"
+          },
+          "visitas": {
+            "items": {
+              "$ref": "#/components/schemas/VisitaOut"
+            },
+            "title": "Visitas",
+            "type": "array"
+          },
+          "minutos_viaje": {
+            "title": "Minutos Viaje",
+            "type": "integer"
+          },
+          "minutos_servicio": {
+            "title": "Minutos Servicio",
+            "type": "integer"
+          },
+          "minutos_total": {
+            "title": "Minutos Total",
+            "type": "integer"
+          },
+          "geometria": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "title": "Geometria",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "vehiculos",
+          "visitas",
+          "minutos_viaje",
+          "minutos_servicio",
+          "minutos_total",
+          "geometria"
+        ],
+        "title": "RutaOut",
+        "type": "object"
+      },
+      "VisitaOut": {
+        "properties": {
+          "solicitud_id": {
+            "title": "Solicitud Id",
+            "type": "integer"
+          },
+          "display_id": {
+            "title": "Display Id",
+            "type": "string"
+          },
+          "equipo": {
+            "title": "Equipo",
+            "type": "string"
+          },
+          "direccion": {
+            "title": "Direccion",
+            "type": "string"
+          },
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          },
+          "llegada_min": {
+            "title": "Llegada Min",
+            "type": "integer"
+          },
+          "servicio_min": {
+            "title": "Servicio Min",
+            "type": "integer"
+          },
+          "urgente": {
+            "title": "Urgente",
+            "type": "boolean"
+          },
+          "requiere_canasta": {
+            "title": "Requiere Canasta",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "solicitud_id",
+          "display_id",
+          "equipo",
+          "direccion",
+          "lat",
+          "lng",
+          "llegada_min",
+          "servicio_min",
+          "urgente",
+          "requiere_canasta"
+        ],
+        "title": "VisitaOut",
+        "type": "object"
+      },
+      "OptimizarIn": {
+        "properties": {
+          "fecha": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha"
+          },
+          "solicitudes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Solicitudes"
+          },
+          "rutas": {
+            "items": {
+              "$ref": "#/components/schemas/RutaIn"
+            },
+            "minItems": 1,
+            "title": "Rutas",
+            "type": "array"
+          },
+          "tiempo_limite_s": {
+            "default": 10,
+            "maximum": 60,
+            "minimum": 1,
+            "title": "Tiempo Limite S",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rutas"
+        ],
+        "title": "OptimizarIn",
+        "type": "object"
+      },
+      "RutaIn": {
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "vehiculos": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Vehiculos",
+            "type": "array"
+          },
+          "fijas": {
+            "default": [],
+            "items": {
+              "type": "integer"
+            },
+            "title": "Fijas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "vehiculos"
+        ],
+        "title": "RutaIn",
+        "type": "object"
+      },
+      "RutaDelDia": {
+        "properties": {
+          "orden_id": {
+            "title": "Orden Id",
+            "type": "integer"
+          },
+          "display_id": {
+            "title": "Display Id",
+            "type": "string"
+          },
+          "estado_general": {
+            "title": "Estado General",
+            "type": "string"
+          },
+          "placas": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Placas",
+            "type": "array"
+          },
+          "tecnicos": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tecnicos",
+            "type": "array"
+          },
+          "trabajos": {
+            "items": {
+              "$ref": "#/components/schemas/TrabajoMapa"
+            },
+            "title": "Trabajos",
+            "type": "array"
+          },
+          "geometria": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "title": "Geometria",
+            "type": "array"
+          }
+        },
+        "required": [
+          "orden_id",
+          "display_id",
+          "estado_general",
+          "placas",
+          "tecnicos",
+          "trabajos",
+          "geometria"
+        ],
+        "title": "RutaDelDia",
+        "type": "object"
+      },
+      "RutasDelDiaOut": {
+        "properties": {
+          "sede": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Punto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rutas": {
+            "items": {
+              "$ref": "#/components/schemas/RutaDelDia"
+            },
+            "title": "Rutas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sede",
+          "rutas"
+        ],
+        "title": "RutasDelDiaOut",
+        "type": "object"
+      },
+      "TrabajoMapa": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "secuencia": {
+            "title": "Secuencia",
+            "type": "integer"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "equipo": {
+            "title": "Equipo",
+            "type": "string"
+          },
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "secuencia",
+          "estado",
+          "equipo",
+          "lat",
+          "lng"
+        ],
+        "title": "TrabajoMapa",
         "type": "object"
       }
     },
