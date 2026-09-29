@@ -3,21 +3,19 @@
 Gestión de operaciones de campo: solicitudes, órdenes de trabajo, equipos,
 vehículos, cuadrillas, planificación de rutas y reportes.
 
-> **Migración en curso.** La aplicación se está migrando de Firebase a
-> **Django + PostgreSQL/PostGIS**, autoalojada en un VPS. Durante la fase 3 las
-> pantallas se reescriben una a una en `frontend/src/` contra la nueva API; el
-> código anterior queda como referencia en `frontend/legacy-src/` (fuera del
-> build) y se eliminará al terminar la fase.
+> **Migración en curso.** La aplicación ya funciona sobre **Django +
+> PostgreSQL/PostGIS** sin Firebase. Faltan los mapas y la planificación
+> automática de rutas (fase 4) y la migración de los datos existentes (fase 6).
 
 ## Estructura del repositorio
 
 ```
 backend/          API y gestión de usuarios (Django 5.2 LTS, Django Ninja, allauth)
-frontend/         Interfaz web (Next.js)
+frontend/         Interfaz web (Next.js 16, React 19, Tailwind 4, TanStack Query)
 deploy/Caddyfile  Reverse proxy con HTTPS automático
 compose.yaml      Stack de producción para el VPS
 compose.dev.yaml  PostgreSQL/PostGIS y Redis para desarrollo local
-legacy/firebase/  Configuración de Firebase (referencia durante la migración)
+legacy/firebase/  Reglas de Firestore (referencia) y exportador de datos para la fase 6
 ```
 
 ## Arquitectura
@@ -153,9 +151,13 @@ Política de contraseñas:
 - [x] **Fase 1: base.** Monorepo, proyecto Django, modelos en PostgreSQL/PostGIS,
       admin, autenticación (allauth headless), roles, Docker Compose, Caddy y CI.
 - [x] **Fase 2: API.** Endpoints por módulo con Django Ninja y permisos por objeto.
-- [ ] **Fase 3: frontend.** Next.js 16, React 19, Tailwind 4, shadcn/ui actual,
-      TanStack Query con un cliente generado desde OpenAPI; eliminar Firebase.
+- [x] **Fase 3: frontend.** Next.js 16, React 19, Tailwind 4, shadcn/ui actual,
+      TanStack Query con un cliente generado desde OpenAPI; sin Firebase.
 - [ ] **Fase 4: mapas y rutas autoalojados.** MapLibre GL, teselas propias,
-      OSRM/Valhalla y optimización de rutas con OR-Tools.
-- [ ] **Fase 5: reportes.** Agregaciones SQL, PDF con WeasyPrint, Excel con openpyxl.
+      OSRM/Valhalla y optimización de rutas con OR-Tools; tablero de
+      planificación, mapa del dashboard y pantalla NOC.
+- [x] **Fase 5: reportes.** Agregaciones SQL en `/api/reportes`, gráficos con
+      Recharts 3 y exportación a Excel; la OT se imprime o guarda como PDF desde
+      el navegador.
+- [ ] **Fase 6: migración de datos** desde Firestore y puesta en producción.
 - [ ] **Fase 6: migración de datos** desde Firestore y puesta en producción.
