@@ -348,3 +348,12 @@ class KpisOut(Schema):
     trabajos_pendientes_creados_hoy: int
     trabajos_no_completados_creados_hoy: int
     solicitudes_pendientes: int
+
+
+class TendenciaDia(Schema):
+    fecha: date
+    ordenes: int
+    pendientes: int
+    completados: int
+    no_completados: int
+    cancelados: int

@@ -813,6 +813,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/dashboard/tendencias": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tendencias
+         * @description Órdenes creadas y sus trabajos por estado, por día de creación de la orden.
+         */
+        get: operations["apps_operations_api_tendencias"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notificaciones": {
         parameters: {
             query?: never;
@@ -875,6 +895,74 @@ export interface paths {
         put?: never;
         /** Marcar Todas */
         post: operations["apps_notifications_api_marcar_todas"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reportes/solicitudes-mensual": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Solicitudes Mensual */
+        get: operations["apps_operations_api_reportes_solicitudes_mensual"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reportes/productividad-mensual": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Productividad Mensual */
+        get: operations["apps_operations_api_reportes_productividad_mensual"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reportes/ranking-equipos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ranking Equipos */
+        get: operations["apps_operations_api_reportes_ranking_equipos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reportes/tecnicos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Estadisticas Tecnicos */
+        get: operations["apps_operations_api_reportes_estadisticas_tecnicos"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2043,6 +2131,24 @@ export interface components {
             /** Solicitudes Pendientes */
             solicitudes_pendientes: number;
         };
+        /** TendenciaDia */
+        TendenciaDia: {
+            /**
+             * Fecha
+             * Format: date
+             */
+            fecha: string;
+            /** Ordenes */
+            ordenes: number;
+            /** Pendientes */
+            pendientes: number;
+            /** Completados */
+            completados: number;
+            /** No Completados */
+            no_completados: number;
+            /** Cancelados */
+            cancelados: number;
+        };
         /** NotificacionOut */
         NotificacionOut: {
             /** Id */
@@ -2083,6 +2189,83 @@ export interface components {
         MarcadasOut: {
             /** Marcadas */
             marcadas: number;
+        };
+        /** SolicitudesMes */
+        SolicitudesMes: {
+            /** Mes */
+            mes: string;
+            /** Solicitudes Creadas */
+            solicitudes_creadas: number;
+            /** Trabajos Completados */
+            trabajos_completados: number;
+            /** Porcentaje Exito */
+            porcentaje_exito: number | null;
+        };
+        /** FilaProductividad */
+        FilaProductividad: {
+            /** Mes */
+            mes: string;
+            /** Por Tipo */
+            por_tipo: {
+                [key: string]: number;
+            };
+            /** Total */
+            total: number;
+        };
+        /** Productividad */
+        Productividad: {
+            /** Tipos */
+            tipos: string[];
+            /** Filas */
+            filas: components["schemas"]["FilaProductividad"][];
+        };
+        /** FilaRanking */
+        FilaRanking: {
+            /** Equipo */
+            equipo: string;
+            /** Tipo Equipo */
+            tipo_equipo: string;
+            /** Total */
+            total: number;
+            /** No Completados */
+            no_completados: number;
+            /** Por Tipo */
+            por_tipo: {
+                [key: string]: number;
+            };
+        };
+        /** Ranking */
+        Ranking: {
+            /** Tipos */
+            tipos: string[];
+            /** Filas */
+            filas: components["schemas"]["FilaRanking"][];
+        };
+        /** EstadisticasTecnicos */
+        EstadisticasTecnicos: {
+            /** Tipos */
+            tipos: string[];
+            /** Filas */
+            filas: components["schemas"]["FilaTecnico"][];
+        };
+        /** FilaTecnico */
+        FilaTecnico: {
+            /** Tecnico Id */
+            tecnico_id: number;
+            /** Nombre */
+            nombre: string;
+            /** Atendidos */
+            atendidos: number;
+            /** Completados */
+            completados: number;
+            /** No Completados */
+            no_completados: number;
+            /** Efectividad */
+            efectividad: number;
+            /** Por Tipo */
+            por_tipo: {
+                [key: string]: number;
+            };
         };
     };
     responses: never;
@@ -3604,6 +3787,28 @@ export interface operations {
             };
         };
     };
+    apps_operations_api_tendencias: {
+        parameters: {
+            query?: {
+                dias?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TendenciaDia"][];
+                };
+            };
+        };
+    };
     apps_notifications_api_listar: {
         parameters: {
             query?: {
@@ -3686,6 +3891,100 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MarcadasOut"];
+                };
+            };
+        };
+    };
+    apps_operations_api_reportes_solicitudes_mensual: {
+        parameters: {
+            query: {
+                desde: string;
+                hasta: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SolicitudesMes"][];
+                };
+            };
+        };
+    };
+    apps_operations_api_reportes_productividad_mensual: {
+        parameters: {
+            query: {
+                desde: string;
+                hasta: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Productividad"];
+                };
+            };
+        };
+    };
+    apps_operations_api_reportes_ranking_equipos: {
+        parameters: {
+            query: {
+                desde: string;
+                hasta: string;
+                tipo_equipo?: string[];
+                limite?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ranking"];
+                };
+            };
+        };
+    };
+    apps_operations_api_reportes_estadisticas_tecnicos: {
+        parameters: {
+            query: {
+                desde: string;
+                hasta: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EstadisticasTecnicos"];
                 };
             };
         };

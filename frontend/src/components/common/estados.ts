@@ -18,8 +18,11 @@ export const ESTADO_ORDEN: Record<string, { etiqueta: string; variante: BadgePro
 };
 
 export const ESTADO_TRABAJO: Record<string, { etiqueta: string; variante: BadgeProps["variant"]; color: string }> = {
-  Pendiente: { etiqueta: "Pendiente", variante: "secondary", color: "#EAB308" },
-  Completado: { etiqueta: "Completado", variante: "default", color: "#16A34A" },
-  "No Completado": { etiqueta: "No completado", variante: "destructive", color: "#DC2626" },
-  Cancelado: { etiqueta: "Cancelado", variante: "outline", color: "#6B7280" },
+  Pendiente: { etiqueta: "Pendiente", variante: "secondary", color: "var(--estado-pendiente)" },
+  Completado: { etiqueta: "Completado", variante: "default", color: "var(--estado-completado)" },
+  "No Completado": { etiqueta: "No completado", variante: "destructive", color: "var(--estado-no-completado)" },
+  Cancelado: { etiqueta: "Cancelado", variante: "outline", color: "var(--estado-cancelado)" },
 };
+
+/** Colores de las series categóricas, en orden fijo (nunca cíclico). */
+export const SERIES = Array.from({ length: 8 }, (_, i) => `var(--serie-${i + 1})`);

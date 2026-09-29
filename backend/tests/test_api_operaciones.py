@@ -427,3 +427,15 @@ def test_historial_de_trabajos_por_equipo(actores, orden, equipo):
     assert datos["items"][0]["equipo"]["codigo"] == equipo.codigo
     assert actores["ingeniero"].get("/api/trabajos?equipo=OTRO").json()["count"] == 0
     assert actores["ingeniero"].get("/api/trabajos?estado=Completado").json()["count"] == 0
+
+
+def test_tendencias_dashboard(actores, orden):
+    trabajo = orden["trabajos"][0]
+    actores["tecnico"].post(
+        f"/api/trabajos/{trabajo['id']}/reportar", {"estado": "Completado"}, content_type=JSON
+    )
+    serie = actores["supervisor"].get("/api/dashboard/tendencias?dias=7").json()
+    assert len(serie) == 7
+    hoy = serie[-1]
+    assert (hoy["ordenes"], hoy["pendientes"], hoy["completados"]) == (1, 1, 1)
+    assert all(d["ordenes"] == 0 for d in serie[:-1])

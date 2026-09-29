@@ -1,7 +1,8 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Count, Prefetch
+from django.db.models.functions import TruncDate
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from ninja import File, Query, Router, UploadedFile
@@ -43,6 +44,7 @@ from .schemas import (
     SolicitudIn,
     SolicitudOut,
     SolicitudPatch,
+    TendenciaDia,
     TrabajoOut,
     UnidadCampoSchema,
 )
@@ -448,3 +450,45 @@ def kpis(request):
             estado=Solicitud.Estado.PENDIENTE
         ).count(),
     }
+
+
+@router.get("/dashboard/tendencias", response=list[TendenciaDia])
+def tendencias(request, dias: int = 14):
+    """Órdenes creadas y sus trabajos por estado, por día de creación de la orden."""
+    exigir_permiso(request, "operations.view_ordendetrabajo")
+    dias = max(1, min(dias, 90))
+    hoy = timezone.localdate()
+    desde = hoy - timedelta(days=dias - 1)
+    serie = {
+        desde + timedelta(days=i): {
+            "ordenes": 0,
+            "pendientes": 0,
+            "completados": 0,
+            "no_completados": 0,
+            "cancelados": 0,
+        }
+        for i in range(dias)
+    }
+    ordenes = (
+        OrdenDeTrabajo.objects.filter(fecha_creacion__date__gte=desde)
+        .annotate(dia=TruncDate("fecha_creacion"))
+        .values("dia")
+        .annotate(n=Count("id"))
+    )
+    for r in ordenes:
+        serie[r["dia"]]["ordenes"] = r["n"]
+    campo = {
+        T.PENDIENTE: "pendientes",
+        T.COMPLETADO: "completados",
+        T.NO_COMPLETADO: "no_completados",
+        T.CANCELADO: "cancelados",
+    }
+    trabajos = (
+        Trabajo.objects.filter(orden__fecha_creacion__date__gte=desde)
+        .annotate(dia=TruncDate("orden__fecha_creacion"))
+        .values("dia", "estado")
+        .annotate(n=Count("id"))
+    )
+    for r in trabajos:
+        serie[r["dia"]][campo[r["estado"]]] = r["n"]
+    return [{"fecha": d, **v} for d, v in serie.items()]

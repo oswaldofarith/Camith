@@ -34,6 +34,21 @@
   --chart-4: hsl(25 78% 54%);
   --chart-5: hsl(280 65% 60%);
 
+  /* Estados de trabajo (paleta de estado, siempre con etiqueta) y series
+     categóricas en orden fijo; validadas con el validador de dataviz. */
+  --estado-completado: #0ca30c;
+  --estado-pendiente: #fab219;
+  --estado-no-completado: #d03b3b;
+  --estado-cancelado: #8a8a86;
+  --serie-1: #2a78d6;
+  --serie-2: #eb6834;
+  --serie-3: #1baf7a;
+  --serie-4: #eda100;
+  --serie-5: #e87ba4;
+  --serie-6: #008300;
+  --serie-7: #4a3aa7;
+  --serie-8: #e34948;
+
   --sidebar: hsl(210 40% 96.1%);
   --sidebar-foreground: hsl(208 30% 28%);
   --sidebar-primary: hsl(217 63% 31%);
@@ -70,6 +85,16 @@
   --chart-3: hsl(160 60% 50%);
   --chart-4: hsl(25 78% 60%);
   --chart-5: hsl(280 65% 70%);
+
+  --estado-cancelado: #9a9a96;
+  --serie-1: #3987e5;
+  --serie-2: #d95926;
+  --serie-3: #199e70;
+  --serie-4: #c98500;
+  --serie-5: #d55181;
+  --serie-6: #008300;
+  --serie-7: #9085e9;
+  --serie-8: #e66767;
 
   --sidebar: hsl(220 15% 12%);
   --sidebar-foreground: hsl(210 20% 90%);

@@ -3013,6 +3013,49 @@
         ]
       }
     },
+    "/api/dashboard/tendencias": {
+      "get": {
+        "operationId": "apps_operations_api_tendencias",
+        "summary": "Tendencias",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "dias",
+            "schema": {
+              "default": 14,
+              "title": "Dias",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TendenciaDia"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Órdenes creadas y sus trabajos por estado, por día de creación de la orden.",
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
     "/api/notificaciones": {
       "get": {
         "operationId": "apps_notifications_api_listar",
@@ -3162,6 +3205,224 @@
         },
         "tags": [
           "notificaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reportes/solicitudes-mensual": {
+      "get": {
+        "operationId": "apps_operations_api_reportes_solicitudes_mensual",
+        "summary": "Solicitudes Mensual",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "format": "date",
+              "title": "Desde",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "format": "date",
+              "title": "Hasta",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SolicitudesMes"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reportes"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reportes/productividad-mensual": {
+      "get": {
+        "operationId": "apps_operations_api_reportes_productividad_mensual",
+        "summary": "Productividad Mensual",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "format": "date",
+              "title": "Desde",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "format": "date",
+              "title": "Hasta",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Productividad"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reportes"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reportes/ranking-equipos": {
+      "get": {
+        "operationId": "apps_operations_api_reportes_ranking_equipos",
+        "summary": "Ranking Equipos",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "format": "date",
+              "title": "Desde",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "format": "date",
+              "title": "Hasta",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "tipo_equipo",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Tipo Equipo",
+              "type": "array"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "schema": {
+              "default": 100,
+              "title": "Limite",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ranking"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reportes"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reportes/tecnicos": {
+      "get": {
+        "operationId": "apps_operations_api_reportes_estadisticas_tecnicos",
+        "summary": "Estadisticas Tecnicos",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "format": "date",
+              "title": "Desde",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "format": "date",
+              "title": "Hasta",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstadisticasTecnicos"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reportes"
         ],
         "security": [
           {
@@ -6460,6 +6721,45 @@
         "title": "KpisOut",
         "type": "object"
       },
+      "TendenciaDia": {
+        "properties": {
+          "fecha": {
+            "format": "date",
+            "title": "Fecha",
+            "type": "string"
+          },
+          "ordenes": {
+            "title": "Ordenes",
+            "type": "integer"
+          },
+          "pendientes": {
+            "title": "Pendientes",
+            "type": "integer"
+          },
+          "completados": {
+            "title": "Completados",
+            "type": "integer"
+          },
+          "no_completados": {
+            "title": "No Completados",
+            "type": "integer"
+          },
+          "cancelados": {
+            "title": "Cancelados",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "fecha",
+          "ordenes",
+          "pendientes",
+          "completados",
+          "no_completados",
+          "cancelados"
+        ],
+        "title": "TendenciaDia",
+        "type": "object"
+      },
       "NotificacionOut": {
         "properties": {
           "id": {
@@ -6573,6 +6873,221 @@
           "marcadas"
         ],
         "title": "MarcadasOut",
+        "type": "object"
+      },
+      "SolicitudesMes": {
+        "properties": {
+          "mes": {
+            "title": "Mes",
+            "type": "string"
+          },
+          "solicitudes_creadas": {
+            "title": "Solicitudes Creadas",
+            "type": "integer"
+          },
+          "trabajos_completados": {
+            "title": "Trabajos Completados",
+            "type": "integer"
+          },
+          "porcentaje_exito": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Porcentaje Exito"
+          }
+        },
+        "required": [
+          "mes",
+          "solicitudes_creadas",
+          "trabajos_completados",
+          "porcentaje_exito"
+        ],
+        "title": "SolicitudesMes",
+        "type": "object"
+      },
+      "FilaProductividad": {
+        "properties": {
+          "mes": {
+            "title": "Mes",
+            "type": "string"
+          },
+          "por_tipo": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Por Tipo",
+            "type": "object"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "mes",
+          "por_tipo",
+          "total"
+        ],
+        "title": "FilaProductividad",
+        "type": "object"
+      },
+      "Productividad": {
+        "properties": {
+          "tipos": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tipos",
+            "type": "array"
+          },
+          "filas": {
+            "items": {
+              "$ref": "#/components/schemas/FilaProductividad"
+            },
+            "title": "Filas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tipos",
+          "filas"
+        ],
+        "title": "Productividad",
+        "type": "object"
+      },
+      "FilaRanking": {
+        "properties": {
+          "equipo": {
+            "title": "Equipo",
+            "type": "string"
+          },
+          "tipo_equipo": {
+            "title": "Tipo Equipo",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          },
+          "no_completados": {
+            "title": "No Completados",
+            "type": "integer"
+          },
+          "por_tipo": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Por Tipo",
+            "type": "object"
+          }
+        },
+        "required": [
+          "equipo",
+          "tipo_equipo",
+          "total",
+          "no_completados",
+          "por_tipo"
+        ],
+        "title": "FilaRanking",
+        "type": "object"
+      },
+      "Ranking": {
+        "properties": {
+          "tipos": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tipos",
+            "type": "array"
+          },
+          "filas": {
+            "items": {
+              "$ref": "#/components/schemas/FilaRanking"
+            },
+            "title": "Filas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tipos",
+          "filas"
+        ],
+        "title": "Ranking",
+        "type": "object"
+      },
+      "EstadisticasTecnicos": {
+        "properties": {
+          "tipos": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tipos",
+            "type": "array"
+          },
+          "filas": {
+            "items": {
+              "$ref": "#/components/schemas/FilaTecnico"
+            },
+            "title": "Filas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tipos",
+          "filas"
+        ],
+        "title": "EstadisticasTecnicos",
+        "type": "object"
+      },
+      "FilaTecnico": {
+        "properties": {
+          "tecnico_id": {
+            "title": "Tecnico Id",
+            "type": "integer"
+          },
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          },
+          "atendidos": {
+            "title": "Atendidos",
+            "type": "integer"
+          },
+          "completados": {
+            "title": "Completados",
+            "type": "integer"
+          },
+          "no_completados": {
+            "title": "No Completados",
+            "type": "integer"
+          },
+          "efectividad": {
+            "title": "Efectividad",
+            "type": "number"
+          },
+          "por_tipo": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Por Tipo",
+            "type": "object"
+          }
+        },
+        "required": [
+          "tecnico_id",
+          "nombre",
+          "atendidos",
+          "completados",
+          "no_completados",
+          "efectividad",
+          "por_tipo"
+        ],
+        "title": "FilaTecnico",
         "type": "object"
       }
     },

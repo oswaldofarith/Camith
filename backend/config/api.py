@@ -11,6 +11,7 @@ from apps.catalogs.api import router as catalogs_router
 from apps.core.api import router as core_router
 from apps.notifications.api import router as notifications_router
 from apps.operations.api import router as operations_router
+from apps.operations.api_reportes import router as reportes_router
 
 # Autenticación por sesión de Django (cookie + CSRF) en todos los endpoints,
 # salvo los que declaren `auth=None` explícitamente.
@@ -29,6 +30,7 @@ api.add_router("/catalogos", catalogs_router)
 api.add_router("/", assets_router)
 api.add_router("/", operations_router)
 api.add_router("/notificaciones", notifications_router)
+api.add_router("/reportes", reportes_router)
 
 
 @api.exception_handler(ValidationError)
