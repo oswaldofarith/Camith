@@ -149,17 +149,35 @@ docker compose --profile mapas up -d    # arranca el servicio osrm
   tablero).
 - La pantalla para el monitor de operaciones está en `/noc`.
 
-## Migración de usuarios desde Firebase
+## Migración de datos desde Firebase
 
 1. Exportar Firestore y las cuentas de Auth (desde `legacy/firebase/export/`,
-   con `serviceAccountKey.json` en esa carpeta):
+   con `serviceAccountKey.json` en esa carpeta o su contenido en la variable
+   `FIREBASE_SERVICE_ACCOUNT`):
    `npm install && npm run exportar` (genera `firestore-export/` en la raíz)
-2. Copiar `firestore-export/` al VPS e importar:
+2. Copiar `firestore-export/` al VPS, probar con `--simular` y luego importar:
    ```bash
    docker compose cp firestore-export backend:/tmp/firestore-export
    docker compose exec -e ADMIN_TEMP_PASSWORD='<temporal>' backend \
-     python manage.py importar_usuarios --dir /tmp/firestore-export --admin-email <email-admin>
+     python manage.py importar_datos --dir /tmp/firestore-export \
+     --admin-email <email-admin> --simular
+   # revisar los avisos y repetir sin --simular
    ```
+
+`importar_datos` importa usuarios, configuración y catálogos, vehículos, equipos
+(con su historial), unidades de campo, solicitudes, órdenes con sus trabajos,
+planes de mantenimiento, notificaciones y las fotos de Firebase Storage.
+
+- Se conservan los códigos de equipos y vehículos y los `displayId` de
+  solicitudes, órdenes y trabajos.
+- Los catálogos se emparejan sin distinguir mayúsculas ni tildes («Urgente» =
+  `urgente`); los valores que no existan se crean y se avisan.
+- Equipos sin coordenadas quedan en la sede con el campo adicional
+  `ubicacion_pendiente`; las IP inválidas se guardan en `ip_original`.
+- Lo que apunte a usuarios que ya no existen queda a nombre de «Usuario no
+  migrado» (`desconocido@migracion.invalid`, inactivo).
+- Es idempotente: lo ya importado no se toca, así que se puede repetir.
+  `--sin-fotos` omite la descarga de fotos.
 
 Política de contraseñas:
 - **No se envía ningún correo.** Los usuarios importados quedan sin contraseña
@@ -168,7 +186,7 @@ Política de contraseñas:
   configurado.
 - Solo el administrador indicado recibe la contraseña temporal. Queda marcado
   con `debe_cambiar_password`, que desaparece al cambiarla.
-- El comando es idempotente: reimportar no pisa contraseñas ya elegidas.
+- Reimportar no pisa contraseñas ya elegidas.
 
 ## Plan de migración
 

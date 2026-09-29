@@ -1,4 +1,4 @@
-"""Importa usuarios exportados de Firebase (ver frontend/scripts/exportar-firestore.mjs).
+"""Importa usuarios exportados de Firebase (ver legacy/firebase/export).
 
 Política de contraseñas acordada para la migración:
 - Los usuarios importados quedan SIN contraseña usable y no se les envía correo;

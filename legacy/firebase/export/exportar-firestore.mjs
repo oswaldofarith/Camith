@@ -1,6 +1,7 @@
 // Exporta Firestore y las cuentas de Firebase Auth a JSON para importarlos en Django.
 //
-// Uso (desde legacy/firebase/export/, con serviceAccountKey.json en esa carpeta):
+// Uso (desde legacy/firebase/export/, con serviceAccountKey.json en esa carpeta
+// o su contenido en la variable FIREBASE_SERVICE_ACCOUNT):
 //   npm install && npm run exportar   (genera firestore-export/ en la raíz)
 //
 // Genera un archivo <coleccion>.json por colección y auth_users.json.
@@ -22,7 +23,10 @@ const COLECCIONES = [
 ];
 
 const destino = path.resolve(process.argv[2] ?? 'firestore-export');
-const credenciales = JSON.parse(fs.readFileSync('serviceAccountKey.json', 'utf8'));
+// La credencial se lee de FIREBASE_SERVICE_ACCOUNT (contenido JSON) o del archivo.
+const credenciales = JSON.parse(
+  process.env.FIREBASE_SERVICE_ACCOUNT ?? fs.readFileSync('serviceAccountKey.json', 'utf8'),
+);
 admin.initializeApp({ credential: admin.credential.cert(credenciales) });
 const db = admin.firestore();
 

@@ -31,6 +31,8 @@ class Notificacion(models.Model):
         blank=True,
         related_name="+",
     )
+    # ID del documento en Firestore, solo para la migración de datos.
+    firestore_id = models.CharField(max_length=128, unique=True, null=True, blank=True)
 
     class Meta:
         verbose_name = "notificación"

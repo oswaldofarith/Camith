@@ -230,6 +230,7 @@ class PlanMantenimiento(TimeStampedModel):
     exclusiones = models.JSONField(default=list, blank=True)
     estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.BORRADOR)
     estadisticas = models.JSONField(default=dict, blank=True)
+    firestore_id = models.CharField(max_length=128, unique=True, null=True, blank=True)
 
     class Meta:
         verbose_name = "plan de mantenimiento"
