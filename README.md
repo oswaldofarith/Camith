@@ -43,15 +43,33 @@ Django con CSRF**, sin JWT ni CORS.
 | `notifications` | Notificaciones por usuario |
 | `core` | IDs legibles secuenciales (`SOL-20260929-001`, `OT-…`), utilidades comunes |
 
-Endpoints disponibles:
+### API
 
-- `GET /api/health`: estado del servicio.
-- `GET /api/csrf`: fija la cookie `csrftoken`.
-- `GET /api/accounts/me`: perfil, roles y habilidades del usuario autenticado.
-- `/api/auth/browser/v1/…`: login, logout, sesión y reseteo de contraseña
-  ([allauth headless](https://docs.allauth.org/en/latest/headless/openapi-specification/)).
-- `/api/docs`: documentación OpenAPI interactiva (solo usuarios con acceso al admin).
-- `/admin/`: panel de administración de Django.
+Documentación interactiva completa en `/api/docs` (solo usuarios con acceso al
+admin). Todas las rutas exigen sesión salvo `health` y `csrf`; las que
+modifican datos exigen además el encabezado `X-CSRFToken`.
+
+| Módulo | Rutas |
+|---|---|
+| Sistema | `GET /api/health`, `GET /api/csrf` |
+| Autenticación | `/api/auth/browser/v1/…`: login, logout, sesión, recuperar y cambiar contraseña ([allauth headless](https://docs.allauth.org/en/latest/headless/openapi-specification/)) |
+| Mi perfil | `GET/PATCH /api/accounts/me`, `POST /api/accounts/me/foto` |
+| Usuarios | `/api/accounts/usuarios` (CRUD), `…/{id}/estado` (activar o desactivar con motivo), `…/{id}/password-temporal`, `GET /api/accounts/skills` |
+| Catálogos | `GET /api/catalogos` (todo en una respuesta), `/api/catalogos/{marcas\|zonas\|tipos-equipo\|…}`, `…/tipos-trabajo`, `…/localidades`, `PUT …/configuracion` |
+| Vehículos | `/api/vehiculos` (CRUD por código) |
+| Equipos | `/api/equipos` (CRUD por código; filtros por catálogo, texto, cercanía `cerca_lat/cerca_lng/radio_m` y `bbox`), `GET /api/equipos/mapa` (GeoJSON), `POST /api/equipos/lote` (importación) |
+| Solicitudes | `/api/solicitudes` (CRUD y filtros), `…/{id}/cancelar` |
+| Unidades de campo | `GET/PUT /api/unidades-campo` |
+| Órdenes de trabajo | `/api/ordenes` (crear varias a la vez, listar, detalle, borrar) |
+| Trabajos | `GET /api/trabajos/mios`, `…/{id}/reportar` (técnico), `…/{id}/revisar` (ingeniero/supervisor), `…/{id}/cancelar`, `…/{id}/fotos` |
+| Mantenimiento | `/api/planes-mantenimiento` (CRUD), `…/{id}/generar-solicitudes` |
+| Notificaciones | `GET /api/notificaciones`, `…/conteo`, `…/{id}/leer`, `…/leer-todas` |
+| Dashboard | `GET /api/dashboard/kpis` |
+| Admin | `/admin/`: panel de administración de Django |
+
+La lógica de negocio (estados de trabajos, sincronización con la solicitud,
+conteo de revisiones del equipo y notificaciones) está en
+`backend/apps/*/services.py` y se ejecuta en una transacción.
 
 Los permisos de cada rol están en `backend/apps/accounts/roles.py` y se aplican
 con `python manage.py sync_roles` (idempotente; el contenedor lo ejecuta al
@@ -122,7 +140,7 @@ Política de contraseñas:
 
 - [x] **Fase 1: base.** Monorepo, proyecto Django, modelos en PostgreSQL/PostGIS,
       admin, autenticación (allauth headless), roles, Docker Compose, Caddy y CI.
-- [ ] **Fase 2: API.** Endpoints por módulo con Django Ninja y permisos por objeto.
+- [x] **Fase 2: API.** Endpoints por módulo con Django Ninja y permisos por objeto.
 - [ ] **Fase 3: frontend.** Next.js 16, React 19, Tailwind 4, shadcn/ui actual,
       TanStack Query con un cliente generado desde OpenAPI; eliminar Firebase.
 - [ ] **Fase 4: mapas y rutas autoalojados.** MapLibre GL, teselas propias,

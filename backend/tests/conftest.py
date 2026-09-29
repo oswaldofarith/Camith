@@ -71,3 +71,37 @@ def crear_solicitud(equipo, tipo_trabajo, supervisor):
         )
 
     return _crear
+
+
+@pytest.fixture
+def vehiculo(db):
+    from apps.assets.models import Vehiculo
+    from apps.catalogs.models import EstadoVehiculo, TipoVehiculo
+
+    return Vehiculo.objects.create(
+        codigo="V-01",
+        placa="GBA-1234",
+        tipo=TipoVehiculo.objects.get(valor="camionCanasta"),
+        estado=EstadoVehiculo.objects.get(valor="disponible"),
+    )
+
+
+@pytest.fixture
+def como(client, crear_usuario):
+    """Devuelve un cliente autenticado con un usuario del rol indicado."""
+    from django.test import Client
+
+    usuarios = {}
+
+    def _como(rol, email=None):
+        email = email or f"{rol.lower()}@example.com"
+        if email not in usuarios:
+            usuarios[email] = User.objects.filter(email=email).first() or crear_usuario(
+                email=email, rol=rol
+            )
+        cliente = Client()
+        cliente.force_login(usuarios[email])
+        cliente.user = usuarios[email]
+        return cliente
+
+    return _como
