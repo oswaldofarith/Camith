@@ -1,0 +1,22 @@
+# Desarrollo local: solo base de datos y Redis en contenedores; Django y Next
+# se ejecutan en la máquina (runserver / npm run dev).
+#   docker compose -f compose.dev.yaml up -d
+services:
+  db:
+    image: postgis/postgis:17-3.5
+    environment:
+      POSTGRES_DB: camith
+      POSTGRES_USER: camith
+      POSTGRES_PASSWORD: camith
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata_dev:

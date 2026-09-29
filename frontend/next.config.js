@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Genera un servidor Node autocontenido para la imagen Docker.
+  output: 'standalone',
   experimental: {
     serverExternalPackages: ['genkit', '@genkit-ai/google-genai'],
   },

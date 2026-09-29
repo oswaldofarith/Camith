@@ -1,35 +1,36 @@
-
-# Dependencies
-node_modules
-/.pnp
+# Dependencias
+node_modules/
+.pnp
 .pnp.js
 
-# Testing
-/coverage
-
 # Next.js
-/.next/
-/out/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
 
-# Production
-/build
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Tests
+coverage/
 
 # Misc
 .DS_Store
 *.pem
 
-# Env & Secrets
+# Entorno y secretos
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 serviceAccountKey.json
-src/serviceAccountKey.json
+**/serviceAccountKey.json
 
 # Vercel
 .vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts

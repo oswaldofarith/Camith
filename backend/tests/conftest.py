@@ -1,0 +1,73 @@
+import datetime
+
+import pytest
+from django.contrib.auth.models import Group
+from django.contrib.gis.geos import Point
+from django.core.management import call_command
+
+from apps.accounts.models import User
+from apps.accounts.roles import Rol
+from apps.assets.models import Equipo
+from apps.catalogs.models import EstadoEquipo, Marca, TipoEquipo, TipoTrabajo, Urgencia, Zona
+
+
+@pytest.fixture
+def roles(db):
+    call_command("sync_roles", verbosity=0)
+
+
+@pytest.fixture
+def crear_usuario(roles):
+    def _crear(email="tecnico@example.com", password="clave-segura-123", rol=None, **extra):
+        user = User.objects.create_user(
+            email=email, password=password, nombre="Usuario Prueba", **extra
+        )
+        if rol:
+            user.groups.add(Group.objects.get(name=rol))
+        return user
+
+    return _crear
+
+
+@pytest.fixture
+def supervisor(crear_usuario):
+    return crear_usuario(email="supervisor@example.com", rol=Rol.SUPERVISOR)
+
+
+@pytest.fixture
+def equipo(db):
+    tipo = TipoEquipo.objects.get(valor="colector")
+    return Equipo.objects.create(
+        codigo="COL-001",
+        tipo=tipo,
+        marca=Marca.objects.get(valor="honeywell"),
+        zona=Zona.objects.get(valor="norte"),
+        estado=EstadoEquipo.objects.get(valor="activo"),
+        direccion="Av. Principal 123",
+        ubicacion=Point(-79.922356, -2.170998, srid=4326),
+        tipo_comunicacion=Equipo.TipoComunicacion.CELULAR,
+    )
+
+
+@pytest.fixture
+def tipo_trabajo(equipo):
+    return TipoTrabajo.objects.create(
+        tipo_equipo=equipo.tipo, nombre="Revisión", tiempo_estimado_minutos=45
+    )
+
+
+@pytest.fixture
+def crear_solicitud(equipo, tipo_trabajo, supervisor):
+    from apps.operations.models import Solicitud
+
+    def _crear(**extra):
+        return Solicitud.objects.create(
+            equipo=equipo,
+            tipo_trabajo=tipo_trabajo,
+            urgencia=Urgencia.objects.get(valor="normal"),
+            fecha_programada=datetime.date(2026, 10, 1),
+            creado_por=supervisor,
+            **extra,
+        )
+
+    return _crear

@@ -1,0 +1,32 @@
+# DOMAIN=app.tudominio.com obtiene un certificado de Let's Encrypt automáticamente.
+# Con DOMAIN=localhost (o :80) se sirve sin TLS público, útil para pruebas.
+{$DOMAIN} {
+	encode zstd gzip
+
+	# API, autenticación, admin y estáticos del admin → Django.
+	@django path /api/* /admin/* /static/*
+	handle @django {
+		reverse_proxy backend:8000
+	}
+
+	# Archivos subidos: solo con sesión válida (Django responde 200/401).
+	handle /media/* {
+		forward_auth backend:8000 {
+			uri /api/media-auth
+		}
+		root * /srv
+		file_server
+	}
+
+	# Todo lo demás → Next.js.
+	handle {
+		reverse_proxy frontend:3000
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+}
