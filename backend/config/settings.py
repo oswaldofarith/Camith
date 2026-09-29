@@ -5,6 +5,7 @@ entorno (ver `.env.example`).
 """
 
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import environ
 
@@ -19,7 +20,11 @@ environ.Env.read_env(BASE_DIR / ".env", overwrite=False)
 
 DEBUG = env("DJANGO_DEBUG")
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="insecure-dev-key" if DEBUG else environ.Env.NOTSET)
-ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS")
+# Acepta "app.com" o "https://app.com": según la versión, el SERVICE_FQDN_* de
+# Coolify trae o no el esquema.
+ALLOWED_HOSTS = [
+    urlsplit(h).hostname if "://" in h else h for h in env("DJANGO_ALLOWED_HOSTS") if h
+]
 # URL pública del frontend (Next.js); se usa en los enlaces de los correos.
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000").rstrip("/")
 

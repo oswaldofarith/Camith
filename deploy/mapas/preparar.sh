@@ -6,6 +6,8 @@
 #
 # Uso:   ./deploy/mapas/preparar.sh          (≈ 10 min, ≈ 1 GB de disco temporal)
 # Luego: docker compose --profile mapas up -d
+# En Coolify: sudo DATOS=/data/camith/mapas ./deploy/mapas/preparar.sh y
+#         reiniciar los servicios osrm y web.
 # Repetir cada pocos meses para actualizar calles y mapa.
 #
 # Requisitos: docker, curl, osmium-tool (apt install osmium-tool).
@@ -16,7 +18,8 @@ BBOX="${BBOX:--80.55,-2.80,-79.70,-1.95}"
 OSRM_IMAGEN="${OSRM_IMAGEN:-ghcr.io/project-osrm/osrm-backend:v5.27.1}"
 MAX_ZOOM="${MAX_ZOOM:-15}"
 
-RAIZ="$(cd "$(dirname "$0")" && pwd)/datos"
+# DATOS cambia la carpeta de destino (en Coolify: la de MAPAS_DIR).
+RAIZ="${DATOS:-$(cd "$(dirname "$0")" && pwd)/datos}"
 TMP="$RAIZ/tmp"
 OSRM="$RAIZ/osrm"
 PUBLICO="$RAIZ/publico"   # lo sirve Caddy en /mapas/
@@ -68,3 +71,4 @@ echo
 echo "Listo. Tamaños:"
 du -sh "$OSRM" "$PUBLICO/guayaquil.pmtiles" "$PUBLICO/assets"
 echo "Arranca el motor de rutas con: docker compose --profile mapas up -d"
+echo "(en Coolify: reinicia los servicios osrm y web)"

@@ -1,5 +1,15 @@
 # DOMAIN=app.tudominio.com obtiene un certificado de Let's Encrypt automáticamente.
-# Con DOMAIN=localhost (o :80) se sirve sin TLS público, útil para pruebas.
+# Con DOMAIN=:80 se sirve sin TLS: para pruebas o detrás de otro proxy (Coolify).
+{
+	servers {
+		# Detrás de otro proxy que termina el HTTPS (TRUSTED_PROXIES=private_ranges
+		# en Coolify) hay que conservar sus X-Forwarded-*; si no, Caddy los
+		# reescribe: Django creería que la petición llegó por http y perdería la
+		# IP real del cliente.
+		trusted_proxies static {$TRUSTED_PROXIES:127.0.0.1/32}
+	}
+}
+
 {$DOMAIN} {
 	encode zstd gzip
 

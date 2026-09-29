@@ -4,8 +4,9 @@ Gestión de operaciones de campo: solicitudes, órdenes de trabajo, equipos,
 vehículos, cuadrillas, planificación de rutas y reportes.
 
 > **Migración en curso.** La aplicación ya funciona sobre **Django +
-> PostgreSQL/PostGIS** sin Firebase, con mapas y rutas autoalojados. Falta la
-> migración de los datos existentes (fase 6).
+> PostgreSQL/PostGIS** sin Firebase, con mapas y rutas autoalojados. El
+> importador de datos está probado con la exportación real; falta la
+> importación en producción (fase 6).
 
 ## Estructura del repositorio
 
@@ -13,7 +14,8 @@ vehículos, cuadrillas, planificación de rutas y reportes.
 backend/          API y gestión de usuarios (Django 5.2 LTS, Django Ninja, allauth)
 frontend/         Interfaz web (Next.js 16, React 19, Tailwind 4, TanStack Query)
 deploy/Caddyfile  Reverse proxy con HTTPS automático
-compose.yaml      Stack de producción para el VPS
+compose.yaml      Stack de producción para un VPS con Docker (Caddy con HTTPS propio)
+compose.coolify.yaml  El mismo stack para Coolify (su proxy pone el HTTPS)
 compose.dev.yaml  PostgreSQL/PostGIS y Redis para desarrollo local
 legacy/firebase/  Reglas de Firestore (referencia) y exportador de datos para la fase 6
 ```
@@ -114,7 +116,7 @@ cd backend && uv run python manage.py export_openapi_schema --api config.api.api
 cd frontend && npm run api:types
 ```
 
-## Despliegue en el VPS
+## Despliegue en un VPS con Docker (sin Coolify)
 
 1. Instalar Docker y el plugin de Compose. Abrir solo los puertos 22, 80 y 443.
 2. Apuntar el DNS del dominio a la IP del VPS.
@@ -149,6 +151,70 @@ docker compose --profile mapas up -d    # arranca el servicio osrm
   tablero).
 - La pantalla para el monitor de operaciones está en `/noc`.
 
+## Despliegue en Coolify
+
+`compose.coolify.yaml` es el mismo stack adaptado a Coolify 4: Traefik (el
+proxy de Coolify) termina el HTTPS y entrega todo al servicio `web` (Caddy), que
+reparte entre Django y Next.js como en `compose.yaml`. No publica puertos, así
+que convive con los demás servicios del servidor.
+
+1. **Crear el recurso:** proyecto → **+ New** → el repositorio (GitHub App o
+   deploy key) → rama a desplegar → build pack **Docker Compose**.
+   - Base Directory: `/`
+   - Docker Compose Location: `/compose.coolify.yaml`
+2. **Dominio:** en el servicio **web**, campo **Domains**:
+   `https://camith.tudominio.com` (un solo dominio, con `https`). Apuntar antes
+   el DNS a la IP del servidor. El resto de servicios no lleva dominio.
+3. **Variables** (Environment Variables). Coolify genera solas la clave de
+   Django (`SERVICE_BASE64_64_DJANGO`), la contraseña de PostgreSQL
+   (`SERVICE_PASSWORD_POSTGRES`) y la URL pública (`SERVICE_URL_WEB`,
+   `SERVICE_FQDN_WEB`, sacadas del dominio del paso 2). Hay que completar:
+
+   | Variable | Obligatoria | Ejemplo |
+   | :-- | :-- | :-- |
+   | `EMAIL_HOST` | sí | `smtp.tuproveedor.com` |
+   | `DEFAULT_FROM_EMAIL` | sí | `AMI-FieldWorkManager <no-reply@tudominio.com>` |
+   | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | según el SMTP | |
+   | `EMAIL_PORT`, `EMAIL_USE_TLS` | no (`587`, `true`) | |
+   | `MAPAS_DIR` | no (`/data/camith/mapas`) | carpeta del servidor con los mapas |
+   | `POSTGRES_DB`, `POSTGRES_USER`, `TIME_ZONE` | no | |
+
+   El correo es imprescindible: los usuarios migrados entran con “¿Olvidaste tu
+   contraseña?”. No cambiar `SERVICE_PASSWORD_POSTGRES` después del primer
+   despliegue (la base ya se creó con ella).
+4. **Deploy.** El primer build tarda unos minutos. Todos los servicios quedan
+   *healthy* salvo `worker`, `beat` y `osrm`, que no tienen healthcheck.
+   Migraciones, roles y estáticos se aplican al arrancar `backend`.
+5. **Mapas y rutas** (opcional; sin ellos la app funciona con fondo liso y
+   tiempos estimados). Por SSH en el servidor, con el repositorio clonado en
+   cualquier carpeta:
+   ```bash
+   sudo apt install osmium-tool curl
+   sudo DATOS=/data/camith/mapas ./deploy/mapas/preparar.sh
+   ```
+   Luego, en Coolify, reiniciar los servicios `osrm` y `web` (o redesplegar).
+   Si se usa otra carpeta, poner la misma en `MAPAS_DIR`.
+
+Para comandos dentro de los contenedores, Coolify ofrece **Terminal** en la
+aplicación. Por SSH, los contenedores se llaman `<servicio>-<uuid>`, donde
+`<uuid>` es el identificador de la aplicación (aparece en su URL de Coolify);
+filtrar por él evita confundirlos con los de otras aplicaciones del servidor:
+
+```bash
+UUID=<uuid-de-la-aplicación>
+B=$(docker ps -q -f name=backend-$UUID)
+docker exec -it $B python manage.py createsuperuser   # si no se importan datos
+```
+
+La base de datos va dentro del stack (volumen `pgdata`), así que las copias de
+seguridad programadas de Coolify para bases de datos no la cubren. Una copia
+diaria por cron en el servidor:
+
+```bash
+DB=$(docker ps -q -f name=db-$UUID)
+docker exec $DB pg_dump -U camith -Fc camith > /root/backups/camith-$(date +%F).dump
+```
+
 ## Migración de datos desde Firebase
 
 1. Exportar Firestore y las cuentas de Auth (desde `legacy/firebase/export/`,
@@ -162,6 +228,14 @@ docker compose --profile mapas up -d    # arranca el servicio osrm
      python manage.py importar_datos --dir /tmp/firestore-export \
      --admin-email <email-admin> --simular
    # revisar los avisos y repetir sin --simular
+   ```
+   En Coolify, por SSH en el servidor (copiar antes la carpeta con `scp`):
+   ```bash
+   B=$(docker ps -q -f name=backend-<uuid-de-la-aplicación>)
+   docker cp firestore-export $B:/tmp/firestore-export
+   docker exec -e ADMIN_TEMP_PASSWORD='<temporal>' $B \
+     python manage.py importar_datos --dir /tmp/firestore-export \
+     --admin-email <email-admin> --simular
    ```
 
 `importar_datos` importa usuarios, configuración y catálogos, vehículos, equipos

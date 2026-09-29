@@ -1,0 +1,172 @@
+# Despliegue en Coolify (build pack «Docker Compose»). Guía: README → Coolify.
+#
+# Diferencias con compose.yaml:
+# - Coolify pone el proxy (Traefik) y el HTTPS: no se publica ningún puerto. El
+#   dominio se asigna al servicio «web» (Caddy, que reparte a Django y Next.js).
+# - Coolify genera la clave de Django y la contraseña de PostgreSQL
+#   (SERVICE_BASE64_64_DJANGO, SERVICE_PASSWORD_POSTGRES) y deriva los hosts
+#   permitidos y la URL pública del dominio de «web» (SERVICE_FQDN_WEB/SERVICE_URL_WEB).
+# - Los datos de mapas viven fuera del repositorio, en MAPAS_DIR del servidor.
+# - OSRM siempre está definido; sin datos espera sin hacer nada.
+#
+# Sin anclas YAML (&/<<) a propósito: Coolify reescribe el archivo al procesarlo.
+
+services:
+  db:
+    image: postgis/postgis:17-3.5
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-camith}
+      POSTGRES_USER: ${POSTGRES_USER:-camith}
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgis://${POSTGRES_USER:-camith}:${SERVICE_PASSWORD_POSTGRES}@db:5432/${POSTGRES_DB:-camith}
+      REDIS_URL: redis://redis:6379/0
+      OSRM_URL: http://osrm:5000
+      DJANGO_SECRET_KEY: ${SERVICE_BASE64_64_DJANGO}
+      DJANGO_ALLOWED_HOSTS: ${SERVICE_FQDN_WEB},backend,localhost
+      FRONTEND_URL: ${SERVICE_URL_WEB}
+      TIME_ZONE: ${TIME_ZONE:-America/Guayaquil}
+      EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+      EMAIL_HOST: ${EMAIL_HOST:?}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USE_TLS: ${EMAIL_USE_TLS:-true}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:?}
+    volumes:
+      - static:/data/static
+      - media:/data/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  worker:
+    build: ./backend
+    restart: unless-stopped
+    command: ["celery", "-A", "config", "worker", "--loglevel", "info"]
+    environment:
+      RUN_MIGRATIONS: "0"
+      DATABASE_URL: postgis://${POSTGRES_USER:-camith}:${SERVICE_PASSWORD_POSTGRES}@db:5432/${POSTGRES_DB:-camith}
+      REDIS_URL: redis://redis:6379/0
+      OSRM_URL: http://osrm:5000
+      DJANGO_SECRET_KEY: ${SERVICE_BASE64_64_DJANGO}
+      DJANGO_ALLOWED_HOSTS: ${SERVICE_FQDN_WEB},backend,localhost
+      FRONTEND_URL: ${SERVICE_URL_WEB}
+      TIME_ZONE: ${TIME_ZONE:-America/Guayaquil}
+      EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+      EMAIL_HOST: ${EMAIL_HOST:?}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USE_TLS: ${EMAIL_USE_TLS:-true}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:?}
+    volumes:
+      - media:/data/media
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  beat:
+    build: ./backend
+    restart: unless-stopped
+    command: ["celery", "-A", "config", "beat", "--loglevel", "info", "--schedule", "/tmp/celerybeat-schedule"]
+    environment:
+      RUN_MIGRATIONS: "0"
+      DATABASE_URL: postgis://${POSTGRES_USER:-camith}:${SERVICE_PASSWORD_POSTGRES}@db:5432/${POSTGRES_DB:-camith}
+      REDIS_URL: redis://redis:6379/0
+      DJANGO_SECRET_KEY: ${SERVICE_BASE64_64_DJANGO}
+      DJANGO_ALLOWED_HOSTS: ${SERVICE_FQDN_WEB},backend,localhost
+      TIME_ZONE: ${TIME_ZONE:-America/Guayaquil}
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # Motor de rutas. Los datos se preparan en el servidor con
+  #   sudo DATOS=/data/camith/mapas ./deploy/mapas/preparar.sh
+  # y luego se reinicia este servicio. Sin datos queda en espera y el backend
+  # estima los tiempos por distancia.
+  osrm:
+    image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        if [ -f /data/guayaquil.osrm.mldgr ]; then
+          exec osrm-routed --algorithm mld --max-table-size 500 /data/guayaquil.osrm
+        fi
+        echo "Sin datos de rutas en MAPAS_DIR/osrm: ejecuta deploy/mapas/preparar.sh"
+        exec sleep infinity
+    volumes:
+      - ${MAPAS_DIR:-/data/camith/mapas}/osrm:/data:ro
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/').then(r => process.exit(r.status < 500 ? 0 : 1), () => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # Punto de entrada público: asigna aquí el dominio en Coolify (https://…).
+  web:
+    build:
+      context: ./deploy
+      dockerfile: caddy.Dockerfile
+    restart: unless-stopped
+    environment:
+      - SERVICE_URL_WEB
+      - DOMAIN=:80
+      - TRUSTED_PROXIES=private_ranges
+    volumes:
+      - media:/srv/media:ro
+      - ${MAPAS_DIR:-/data/camith/mapas}/publico:/srv/mapas:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    healthcheck:
+      # API de administración de Caddy: no depende del backend ni del frontend.
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:2019/config/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  static:
+  media:
