@@ -1,0 +1,156 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if a user has a specific role
+    function hasRole(userId, role) {
+      if (!exists(/databases/$(database)/documents/users/$(userId))) {
+        return false;
+      }
+      let userProfile = get(/databases/$(database)/documents/users/$(userId)).data;
+      return 'perfiles' in userProfile && role in userProfile.perfiles;
+    }
+    
+    // Helper function to check if a user is one of multiple roles
+    function hasAnyRole(userId, roles) {
+      if (!exists(/databases/$(database)/documents/users/$(userId))) {
+        return false;
+      }
+      let userProfile = get(/databases/$(database)/documents/users/$(userId)).data;
+      return 'perfiles' in userProfile && userProfile.perfiles.hasAny(roles);
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && hasRole(request.auth.uid, "administrador");
+      allow update: if request.auth != null && (
+                      request.auth.uid == userId ||
+                      hasRole(request.auth.uid, "administrador")
+                    );
+      allow delete: if request.auth != null && hasRole(request.auth.uid, "administrador");
+    }
+
+    // Vehicle management
+    match /vehiculos/{vehicleId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && hasAnyRole(request.auth.uid, ["administrador", "supervisor"]);
+    }
+
+    // Equipment management
+    match /equipos/{equipoId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && hasAnyRole(request.auth.uid, ["administrador", "supervisor"]);
+    }
+
+    // Service requests
+    match /solicitudes/{solicitudId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && hasAnyRole(request.auth.uid, ["administrador", "supervisor", "ingenieroDeOficina"]);
+      allow update: if request.auth != null && hasAnyRole(request.auth.uid, ["administrador", "supervisor", "ingenieroDeOficina"]);
+      allow delete: if request.auth != null && hasAnyRole(request.auth.uid, ["administrador", "supervisor"]);
+    }
+    
+    // Field unit compositions (defaults)
+    match /fieldUnitCompositions/{compositionId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && hasAnyRole(request.auth.uid, ["administrador", "supervisor"]);
+    }
+
+    // Work Orders
+    match /ordenesDeTrabajo/{orderId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && hasAnyRole(request.auth.uid, ["administrador", "supervisor"]);
+      allow update: if request.auth != null && 
+                      (
+                        // Supervisor or Admin can update anything (within reason, specific fields might be added)
+                        hasAnyRole(request.auth.uid, ["administrador", "supervisor"]) ||
+                        // Engineer can update for their specific review actions
+                        (
+                          hasRole(request.auth.uid, "ingenieroDeOficina") &&
+                          // Ensure engineer is not changing core assignment details, only job details/status through review
+                          request.resource.data.keys().hasAll(['trabajos', 'estadoGeneral']) && // Only these top-level fields
+                          request.resource.data.trabajos.size() == resource.data.trabajos.size() && // No adding/removing jobs
+                          request.resource.data.unidadesAsignadas == resource.data.unidadesAsignadas && // Cannot change assignments
+                          request.resource.data.allAssignedTechnicianIds == resource.data.allAssignedTechnicianIds && // Cannot change assignments
+                          // Further checks for individual 'trabajo' updates:
+                          // For each trabajo in the new 'trabajos' array that differs from the old one:
+                          request.resource.data.trabajos.forall(
+                            t_new -> let t_old = resource.data.trabajos.get(t_new.id, null) in
+                              // If the job is new or didn't exist (should not happen in engineer update), or if it's unchanged, allow.
+                              t_old == null || t_new == t_old ||
+                              (
+                                // If changed, check specific engineer-allowed modifications:
+                                t_old.id == t_new.id &&
+                                t_old.equipoId == t_new.equipoId &&
+                                t_old.solicitudId == t_new.solicitudId &&
+                                t_old.tipoTrabajo == t_new.tipoTrabajo &&
+                                // Engineer can change estado or add observacionIngeniero
+                                (t_new.estado in ["Pendiente", "Completado", "No Completado"] || t_new.observacionIngeniero != t_old.observacionIngeniero) &&
+                                // Other fields related to technician completion should remain as set by technician or be cleared if reverting to Pendiente
+                                (t_new.estado == "Pendiente" ? 
+                                  (t_new.completadoPor == null && t_new.fechaFinalizacion == null && t_new.hallazgos == null && t_new.detalles == null)
+                                  : (t_new.completadoPor == t_old.completadoPor && t_new.fechaFinalizacion == t_old.fechaFinalizacion && t_new.hallazgos == t_old.hallazgos && t_new.detalles == t_old.detalles)
+                                ) &&
+                                t_new.motivoCancelacion == t_old.motivoCancelacion // Engineer not cancelling via this path
+                              )
+                          )
+                        ) ||
+                        // Technician can update their assigned jobs
+                        (
+                          hasRole(request.auth.uid, "tecnicoDeCampo") &&
+                          isAssignedToOrder(request.auth.uid, orderId) &&
+                          // Technicians should only be able to update the 'trabajos' array and 'estadoGeneral'
+                          request.resource.data.keys().hasAll(['trabajos', 'estadoGeneral']) &&
+                          // Technicians cannot change assignments or creator
+                          request.resource.data.unidadesAsignadas == resource.data.unidadesAsignadas &&
+                          request.resource.data.allAssignedTechnicianIds == resource.data.allAssignedTechnicianIds &&
+                          request.resource.data.creadoPor == resource.data.creadoPor &&
+                          // Ensure no jobs are added or removed
+                          request.resource.data.trabajos.size() == resource.data.trabajos.size() &&
+                          // For each trabajo in the new 'trabajos' array that differs from the old one:
+                          request.resource.data.trabajos.forall(
+                            t_new -> let t_old = resource.data.trabajos.get(t_new.id, null) in
+                              // If the job is new or didn't exist (should not happen in update), or if it's unchanged, allow.
+                              t_old == null || t_new == t_old ||
+                              (
+                                // If changed, ensure it's an allowed modification by the technician:
+                                t_old.id == t_new.id &&
+                                t_old.equipoId == t_new.equipoId &&
+                                t_old.solicitudId == t_new.solicitudId &&
+                                t_old.tipoTrabajo == t_new.tipoTrabajo &&
+                                // Technician can only modify jobs that were 'Pendiente' or that they previously completed/not completed
+                                (t_old.estado == "Pendiente" || t_old.completadoPor == request.auth.uid) &&
+                                // Cannot modify a 'Cancelado' job
+                                t_old.estado != "Cancelado" &&
+                                // If new state is Completado or No Completado, completadoPor must be current user
+                                ( (t_new.estado == "Completado" || t_new.estado == "No Completado") ? t_new.completadoPor == request.auth.uid : true ) &&
+                                // Only specific fields can be changed by technician
+                                t_new.keys().hasOnly(['id', 'equipoId', 'solicitudId', 'tipoTrabajo', 'estado', 'detalles', 'hallazgos', 'completadoPor', 'fechaFinalizacion', 'observacionIngeniero', 'requiereNuevaRevision', 'fechaNuevaRevision', 'motivoCancelacion', 'fotos']) &&
+                                // Ensure fields not editable by technician remain unchanged
+                                t_new.observacionIngeniero == t_old.observacionIngeniero &&
+                                t_new.requiereNuevaRevision == t_old.requiereNuevaRevision &&
+                                t_new.fechaNuevaRevision == t_old.fechaNuevaRevision &&
+                                // If cancelling, motivoCancelacion must be provided
+                                (t_new.estado == "Cancelado" ? t_new.motivoCancelacion != null : true)
+                              )
+                          )
+                        )
+                      );
+      allow delete: if request.auth != null && hasAnyRole(request.auth.uid, ["administrador", "supervisor"]);
+    }
+
+    // Maintenance Plans
+    match /planesDeMantenimiento/{planId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if hasAnyRole(request.auth.uid, ["administrador", "supervisor"]);
+    }
+    
+    // App general configuration
+    match /appConfiguration/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && hasRole(request.auth.uid, "administrador");
+    }
+  }
+}
