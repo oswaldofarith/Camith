@@ -23,7 +23,8 @@ import type { Solicitud } from "@/lib/api/types";
 export default function CrearOrdenPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [hasta, setHasta] = useState(() => new Date().toISOString().slice(0, 10));
+  // Vacío = todas las pendientes (lo habitual es planificar hoy la ruta de mañana).
+  const [hasta, setHasta] = useState("");
   const [texto, setTexto] = useState("");
   const [vehiculo, setVehiculo] = useState("");
   const [tecnicosElegidos, setTecnicos] = useState<number[] | null>(null);
@@ -81,7 +82,7 @@ export default function CrearOrdenPage() {
         <Card>
           <CardHeader>
             <CardTitle>Solicitudes pendientes</CardTitle>
-            <CardDescription>Programadas hasta la fecha indicada.</CardDescription>
+            <CardDescription>Todas las pendientes; filtra por fecha programada si lo necesitas.</CardDescription>
             <div className="flex gap-2 pt-2">
               <Input type="date" aria-label="Programadas hasta" className="w-44" value={hasta} onChange={(e) => setHasta(e.target.value)} />
               <Input placeholder="Buscar solicitud, equipo o trabajo" value={texto} onChange={(e) => setTexto(e.target.value)} />
