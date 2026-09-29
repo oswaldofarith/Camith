@@ -41,7 +41,11 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {"fields": ("email", "password")}),
         ("Datos personales", {"fields": ("nombre", "cedula", "numero_rol", "foto", "habilidades")}),
-        ("Roles y permisos", {"fields": ("is_active", "groups", "is_staff", "is_superuser")}),
+        (
+            "Roles y permisos",
+            {"fields": ("is_active", "groups", "is_staff", "is_superuser")},
+        ),
+        ("Contraseña", {"fields": ("debe_cambiar_password",)}),
         ("Fechas", {"fields": ("last_login", "date_joined")}),
         ("Migración", {"classes": ("collapse",), "fields": ("firebase_uid",)}),
     )

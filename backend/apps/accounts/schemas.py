@@ -12,3 +12,4 @@ class MeOut(Schema):
     perfiles: list[str]
     habilidades: list[str]
     is_staff: bool
+    debe_cambiar_password: bool

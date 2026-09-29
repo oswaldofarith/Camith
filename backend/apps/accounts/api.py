@@ -19,4 +19,5 @@ def me(request):
         perfiles=user.perfiles,
         habilidades=[h.nombre for h in user.habilidades.all()],
         is_staff=user.is_staff,
+        debe_cambiar_password=user.debe_cambiar_password,
     )

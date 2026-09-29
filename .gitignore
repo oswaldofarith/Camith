@@ -34,3 +34,4 @@ serviceAccountKey.json
 
 # Vercel
 .vercel
+firestore-export/

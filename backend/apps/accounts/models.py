@@ -64,6 +64,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text="Permite entrar al panel /admin/ de Django.",
     )
     date_joined = models.DateTimeField("fecha de alta", default=timezone.now)
+    debe_cambiar_password = models.BooleanField(
+        "debe cambiar la contraseña",
+        default=False,
+        help_text="Obliga a cambiar la contraseña (temporal) en el próximo inicio de sesión.",
+    )
 
     # UID de Firebase Auth, solo para la migración de datos desde Firestore.
     firebase_uid = models.CharField(max_length=128, unique=True, null=True, blank=True)

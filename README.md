@@ -97,6 +97,27 @@ npm run dev                              # http://localhost:3000
 Caddy obtiene el certificado HTTPS automáticamente. Las migraciones, los roles y
 los archivos estáticos se aplican al arrancar el contenedor `backend`.
 
+## Migración de usuarios desde Firebase
+
+1. Exportar Firestore y las cuentas de Auth (desde `frontend/`, con
+   `serviceAccountKey.json` en esa carpeta):
+   `node scripts/exportar-firestore.mjs ../firestore-export`
+2. Copiar `firestore-export/` al VPS e importar:
+   ```bash
+   docker compose cp firestore-export backend:/tmp/firestore-export
+   docker compose exec -e ADMIN_TEMP_PASSWORD='<temporal>' backend \
+     python manage.py importar_usuarios --dir /tmp/firestore-export --admin-email <email-admin>
+   ```
+
+Política de contraseñas:
+- **No se envía ningún correo.** Los usuarios importados quedan sin contraseña
+  usable y cada uno la define con “¿Olvidaste tu contraseña?”. Ese flujo sí
+  envía un correo con el enlace, así que el SMTP (`EMAIL_*` en `.env`) debe estar
+  configurado.
+- Solo el administrador indicado recibe la contraseña temporal. Queda marcado
+  con `debe_cambiar_password`, que desaparece al cambiarla.
+- El comando es idempotente: reimportar no pisa contraseñas ya elegidas.
+
 ## Plan de migración
 
 - [x] **Fase 1: base.** Monorepo, proyecto Django, modelos en PostgreSQL/PostGIS,
