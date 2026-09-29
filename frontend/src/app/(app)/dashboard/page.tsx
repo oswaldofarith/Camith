@@ -9,6 +9,7 @@ import { Vacio } from "@/components/common/Estado";
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatCard } from "@/components/common/StatCard";
 import { OrdenesPorDia, ProgresoDelDia, TrabajosPorDia } from "@/components/dashboard/graficos";
+import { MapaRutasDelDia } from "@/components/mapa/MapaRutasDelDia";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,6 +71,17 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        {verOperacion && (
+          <Card className="lg:col-span-3">
+            <CardHeader>
+              <CardTitle>Mapa de operaciones</CardTitle>
+              <CardDescription>Órdenes de hoy y las que aún tienen trabajos pendientes.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <MapaRutasDelDia className="h-[28rem]" />
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardHeader>
             <CardTitle>Progreso del día</CardTitle>

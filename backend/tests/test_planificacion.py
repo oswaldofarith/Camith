@@ -88,6 +88,7 @@ def test_propone_rutas_respetando_reglas(como, sede, flota, solicitudes):
     plan = resp.json()
     assert plan["fuente_tiempos"] == "estimado"
     assert plan["jornada_min"] == 480  # 9 h − 1 h de almuerzo
+    assert plan["hora_inicio"] == "08:00"
     visitas = {r["id"]: [v["solicitud_id"] for v in r["visitas"]] for r in plan["rutas"]}
     todas = [s for vs in visitas.values() for s in vs]
     assert sorted(todas) == sorted([urgente.pk, canasta.pk, normal.pk])  # la futura no entra

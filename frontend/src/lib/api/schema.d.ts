@@ -1957,17 +1957,29 @@ export interface components {
         };
         /** PlanOut */
         PlanOut: {
-            sede: components["schemas"]["Punto"];
-            /** Jornada Min */
-            jornada_min: number;
-            /** Hora Inicio */
-            hora_inicio: string | null;
-            /** Fuente Tiempos */
-            fuente_tiempos: string;
-            /** Rutas */
-            rutas: components["schemas"]["RutaOut"][];
-            /** No Asignadas */
-            no_asignadas: components["schemas"]["NoAsignadaOut"][];
+            /** Id */
+            id: number;
+            /** Nombre */
+            nombre: string;
+            /**
+             * Fecha Creacion
+             * Format: date-time
+             */
+            fecha_creacion: string;
+            /** Creado Por Id */
+            creado_por_id: number;
+            /** Tiempo De Ejecucion Dias */
+            tiempo_de_ejecucion_dias: number;
+            /** Exclusiones */
+            exclusiones: {
+                [key: string]: unknown;
+            }[];
+            /** Estado */
+            estado: string;
+            /** Estadisticas */
+            estadisticas: {
+                [key: string]: unknown;
+            };
         };
         /** MantenimientoOut */
         MantenimientoOut: {
@@ -2312,6 +2324,20 @@ export interface components {
             urgente: boolean;
             /** Motivo */
             motivo: string;
+        };
+        /** PlanRutasOut */
+        PlanRutasOut: {
+            sede: components["schemas"]["Punto"];
+            /** Jornada Min */
+            jornada_min: number;
+            /** Hora Inicio */
+            hora_inicio: string | null;
+            /** Fuente Tiempos */
+            fuente_tiempos: string;
+            /** Rutas */
+            rutas: components["schemas"]["RutaOut"][];
+            /** No Asignadas */
+            no_asignadas: components["schemas"]["NoAsignadaOut"][];
         };
         /** RutaOut */
         RutaOut: {
@@ -4158,7 +4184,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PlanOut"];
+                    "application/json": components["schemas"]["PlanRutasOut"];
                 };
             };
         };

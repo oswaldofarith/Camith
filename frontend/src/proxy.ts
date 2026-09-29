@@ -20,5 +20,5 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // Excluye la API y los archivos estáticos (Django y Caddy los atienden).
-  matcher: ["/((?!api|media|_next|favicon|images).*)"],
+  matcher: ["/((?!api|media|mapas|maplibre|_next|favicon|images).*)"],
 };

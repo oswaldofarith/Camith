@@ -35,3 +35,6 @@ serviceAccountKey.json
 # Vercel
 .vercel
 firestore-export/
+deploy/mapas/datos/
+frontend/public/mapas/
+frontend/public/maplibre/

@@ -4,8 +4,8 @@ Gestión de operaciones de campo: solicitudes, órdenes de trabajo, equipos,
 vehículos, cuadrillas, planificación de rutas y reportes.
 
 > **Migración en curso.** La aplicación ya funciona sobre **Django +
-> PostgreSQL/PostGIS** sin Firebase. Faltan los mapas y la planificación
-> automática de rutas (fase 4) y la migración de los datos existentes (fase 6).
+> PostgreSQL/PostGIS** sin Firebase, con mapas y rutas autoalojados. Falta la
+> migración de los datos existentes (fase 6).
 
 ## Estructura del repositorio
 
@@ -64,7 +64,8 @@ modifican datos exigen además el encabezado `X-CSRFToken`.
 | Trabajos | `GET /api/trabajos/mios`, `…/{id}/reportar` (técnico), `…/{id}/revisar` (ingeniero/supervisor), `…/{id}/cancelar`, `…/{id}/fotos` |
 | Mantenimiento | `/api/planes-mantenimiento` (CRUD), `…/previsualizar` y `…/generar` (planificador de reglas fijas), `…/{id}/generar-solicitudes` (crea el tipo de trabajo “Mantenimiento preventivo” si falta) |
 | Notificaciones | `GET /api/notificaciones`, `…/conteo`, `…/{id}/leer`, `…/leer-todas` |
-| Dashboard | `GET /api/dashboard/kpis` |
+| Dashboard | `GET /api/dashboard/kpis`, `GET /api/dashboard/tendencias` |
+| Planificación | `POST /api/planificacion/optimizar` (OR-Tools; tiempos de OSRM o estimados si no está), `GET /api/planificacion/rutas-del-dia` (rutas con geometría para el dashboard y el NOC) |
 | Admin | `/admin/`: panel de administración de Django |
 
 La lógica de negocio (estados de trabajos, sincronización con la solicitud,
@@ -125,11 +126,34 @@ cd frontend && npm run api:types
 Caddy obtiene el certificado HTTPS automáticamente. Las migraciones, los roles y
 los archivos estáticos se aplican al arrancar el contenedor `backend`.
 
+### Mapas y rutas (Guayaquil y General Villamil Playas)
+
+El mapa base (PMTiles de Protomaps) y el motor de rutas (OSRM) se sirven desde el
+propio VPS; no se usa ningún servicio externo. Se preparan una sola vez (y cuando
+se quiera actualizar la cartografía):
+
+```bash
+sudo apt install osmium-tool curl       # además de Docker
+./deploy/mapas/preparar.sh              # descarga OSM de Ecuador, recorta el área,
+                                        # procesa OSRM y extrae las teselas
+docker compose --profile mapas up -d    # arranca el servicio osrm
+```
+
+- Los datos quedan en `deploy/mapas/datos/` (ignorado por git). Caddy sirve el
+  mapa base en `/mapas/`; el backend consulta OSRM en `http://osrm:5000`.
+- El área (`BBOX` en el script) cubre Guayaquil, Durán, la vía a la Costa y
+  Playas. Procesarla usa ~1,5 GB de RAM durante unos minutos; en marcha OSRM
+  ocupa ~300 MB, así que 4 GB de RAM alcanzan para toda la aplicación.
+- Sin estos datos la app sigue funcionando: el mapa muestra un fondo liso con un
+  aviso y el optimizador usa tiempos estimados por distancia (lo indica en el
+  tablero).
+- La pantalla para el monitor de operaciones está en `/noc`.
+
 ## Migración de usuarios desde Firebase
 
-1. Exportar Firestore y las cuentas de Auth (desde `frontend/`, con
-   `serviceAccountKey.json` en esa carpeta):
-   `node scripts/exportar-firestore.mjs ../firestore-export`
+1. Exportar Firestore y las cuentas de Auth (desde `legacy/firebase/export/`,
+   con `serviceAccountKey.json` en esa carpeta):
+   `npm install && npm run exportar` (genera `firestore-export/` en la raíz)
 2. Copiar `firestore-export/` al VPS e importar:
    ```bash
    docker compose cp firestore-export backend:/tmp/firestore-export
@@ -153,11 +177,10 @@ Política de contraseñas:
 - [x] **Fase 2: API.** Endpoints por módulo con Django Ninja y permisos por objeto.
 - [x] **Fase 3: frontend.** Next.js 16, React 19, Tailwind 4, shadcn/ui actual,
       TanStack Query con un cliente generado desde OpenAPI; sin Firebase.
-- [ ] **Fase 4: mapas y rutas autoalojados.** MapLibre GL, teselas propias,
-      OSRM/Valhalla y optimización de rutas con OR-Tools; tablero de
+- [x] **Fase 4: mapas y rutas autoalojados.** MapLibre GL, teselas PMTiles propias,
+      OSRM y optimización de rutas con OR-Tools; tablero de
       planificación, mapa del dashboard y pantalla NOC.
 - [x] **Fase 5: reportes.** Agregaciones SQL en `/api/reportes`, gráficos con
       Recharts 3 y exportación a Excel; la OT se imprime o guarda como PDF desde
       el navegador.
-- [ ] **Fase 6: migración de datos** desde Firestore y puesta en producción.
 - [ ] **Fase 6: migración de datos** desde Firestore y puesta en producción.

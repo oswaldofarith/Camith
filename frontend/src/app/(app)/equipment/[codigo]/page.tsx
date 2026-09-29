@@ -10,6 +10,7 @@ import { use, useState } from "react";
 import { toast } from "sonner";
 
 import { Cargando, ErrorCarga, Vacio } from "@/components/common/Estado";
+import { Mapa, MarcadorParada } from "@/components/mapa";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Paginacion } from "@/components/common/Paginacion";
 import {
@@ -137,6 +138,13 @@ export default function EquipoPage({ params }: { params: Promise<{ codigo: strin
           </CardContent>
         </Card>
 
+        <Card className="lg:col-span-3">
+          <CardContent className="pt-6">
+            <Mapa className="h-72" initialViewState={{ latitude: e.lat, longitude: e.lng, zoom: 15 }}>
+              <MarcadorParada lat={e.lat} lng={e.lng} color="var(--primary)" titulo={`Equipo ${e.codigo}`} />
+            </Mapa>
+          </CardContent>
+        </Card>
         <Card className="lg:col-span-2">
           <CardHeader><CardTitle>Historial de trabajos ({trabajos.data?.count ?? 0})</CardTitle></CardHeader>
           <CardContent className="p-0">

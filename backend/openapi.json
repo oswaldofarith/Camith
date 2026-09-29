@@ -3442,7 +3442,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PlanOut"
+                  "$ref": "#/components/schemas/PlanRutasOut"
                 }
               }
             }
@@ -6313,50 +6313,54 @@
       },
       "PlanOut": {
         "properties": {
-          "sede": {
-            "$ref": "#/components/schemas/Punto"
-          },
-          "jornada_min": {
-            "title": "Jornada Min",
+          "id": {
+            "title": "Id",
             "type": "integer"
           },
-          "hora_inicio": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Hora Inicio"
-          },
-          "fuente_tiempos": {
-            "title": "Fuente Tiempos",
+          "nombre": {
+            "title": "Nombre",
             "type": "string"
           },
-          "rutas": {
+          "fecha_creacion": {
+            "format": "date-time",
+            "title": "Fecha Creacion",
+            "type": "string"
+          },
+          "creado_por_id": {
+            "title": "Creado Por Id",
+            "type": "integer"
+          },
+          "tiempo_de_ejecucion_dias": {
+            "title": "Tiempo De Ejecucion Dias",
+            "type": "integer"
+          },
+          "exclusiones": {
             "items": {
-              "$ref": "#/components/schemas/RutaOut"
+              "additionalProperties": true,
+              "type": "object"
             },
-            "title": "Rutas",
+            "title": "Exclusiones",
             "type": "array"
           },
-          "no_asignadas": {
-            "items": {
-              "$ref": "#/components/schemas/NoAsignadaOut"
-            },
-            "title": "No Asignadas",
-            "type": "array"
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "estadisticas": {
+            "additionalProperties": true,
+            "title": "Estadisticas",
+            "type": "object"
           }
         },
         "required": [
-          "sede",
-          "jornada_min",
-          "hora_inicio",
-          "fuente_tiempos",
-          "rutas",
-          "no_asignadas"
+          "id",
+          "nombre",
+          "fecha_creacion",
+          "creado_por_id",
+          "tiempo_de_ejecucion_dias",
+          "exclusiones",
+          "estado",
+          "estadisticas"
         ],
         "title": "PlanOut",
         "type": "object"
@@ -7211,6 +7215,56 @@
           "motivo"
         ],
         "title": "NoAsignadaOut",
+        "type": "object"
+      },
+      "PlanRutasOut": {
+        "properties": {
+          "sede": {
+            "$ref": "#/components/schemas/Punto"
+          },
+          "jornada_min": {
+            "title": "Jornada Min",
+            "type": "integer"
+          },
+          "hora_inicio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hora Inicio"
+          },
+          "fuente_tiempos": {
+            "title": "Fuente Tiempos",
+            "type": "string"
+          },
+          "rutas": {
+            "items": {
+              "$ref": "#/components/schemas/RutaOut"
+            },
+            "title": "Rutas",
+            "type": "array"
+          },
+          "no_asignadas": {
+            "items": {
+              "$ref": "#/components/schemas/NoAsignadaOut"
+            },
+            "title": "No Asignadas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sede",
+          "jornada_min",
+          "hora_inicio",
+          "fuente_tiempos",
+          "rutas",
+          "no_asignadas"
+        ],
+        "title": "PlanRutasOut",
         "type": "object"
       },
       "RutaOut": {

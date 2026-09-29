@@ -27,7 +27,9 @@ def test_estimacion_de_tiempos():
     m = matriz_tiempos([SEDE, PLAYAS])
     assert m.fuente == "estimado"
     assert m.minutos[0][0] == 0
-    assert 190 < m.minutos[0][1] < 240  # ~75 km con desvío a 28 km/h
+    assert 90 < m.minutos[0][1] < 130  # ~75 km: 10 km urbanos y el resto por carretera
+    cerca = matriz_tiempos([SEDE, (SEDE[0] + 0.02, SEDE[1])])  # ~2,2 km en la ciudad
+    assert 5 <= cerca.minutos[0][1] <= 10
 
 
 def test_asigna_todo_y_equilibra():

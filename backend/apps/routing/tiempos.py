@@ -16,9 +16,12 @@ log = logging.getLogger(__name__)
 
 Punto = tuple[float, float]  # (lat, lng)
 
-# Estimación de respaldo, calibrada para tráfico urbano de Guayaquil.
+# Estimación de respaldo: los primeros km a velocidad urbana de Guayaquil y el
+# resto a velocidad de carretera (p. ej., Vía a la Costa hacia Playas).
 FACTOR_DESVIO = 1.35
-VELOCIDAD_KMH = 28.0
+KM_URBANOS = 10.0
+VELOCIDAD_URBANA_KMH = 25.0
+VELOCIDAD_CARRETERA_KMH = 65.0
 TIMEOUT_S = 10.0
 
 
@@ -38,13 +41,16 @@ def distancia_km(a: Punto, b: Punto) -> float:
     return 2 * 6371.0 * math.asin(math.sqrt(h))
 
 
+def minutos_estimados(a: Punto, b: Punto) -> int:
+    km = distancia_km(a, b) * FACTOR_DESVIO
+    urbano = min(km, KM_URBANOS)
+    horas = urbano / VELOCIDAD_URBANA_KMH + (km - urbano) / VELOCIDAD_CARRETERA_KMH
+    return round(horas * 60)
+
+
 def _estimar(puntos: list[Punto]) -> Matriz:
     return Matriz(
-        minutos=[
-            [round(distancia_km(a, b) * FACTOR_DESVIO / VELOCIDAD_KMH * 60) for b in puntos]
-            for a in puntos
-        ],
-        fuente="estimado",
+        minutos=[[minutos_estimados(a, b) for b in puntos] for a in puntos], fuente="estimado"
     )
 
 

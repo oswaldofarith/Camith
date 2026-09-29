@@ -18,6 +18,14 @@
 		file_server
 	}
 
+	# Mapa base autoalojado (PMTiles + fuentes e iconos). Se leen por rangos de
+	# bytes y cambian solo al volver a ejecutar deploy/mapas/preparar.sh.
+	handle /mapas/* {
+		header Cache-Control "public, max-age=86400"
+		root * /srv
+		file_server
+	}
+
 	# Todo lo demás → Next.js.
 	handle {
 		reverse_proxy frontend:3000

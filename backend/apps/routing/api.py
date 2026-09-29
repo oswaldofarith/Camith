@@ -1,6 +1,6 @@
 import hashlib
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -73,7 +73,7 @@ class NoAsignadaOut(Schema):
     motivo: str
 
 
-class PlanOut(Schema):
+class PlanRutasOut(Schema):
     sede: Punto
     jornada_min: int
     hora_inicio: str | None
@@ -140,7 +140,7 @@ def _geometria(puntos: list[tuple[float, float]]) -> list[list[float]]:
 # --- Endpoints --------------------------------------------------------------------
 
 
-@router.post("/optimizar", response=PlanOut)
+@router.post("/optimizar", response=PlanRutasOut)
 def optimizar(request, payload: OptimizarIn):
     """Propone rutas para las solicitudes pendientes. No crea nada: el supervisor
     revisa la propuesta y la confirma creando las órdenes (POST /api/ordenes)."""
@@ -206,9 +206,15 @@ def optimizar(request, payload: OptimizarIn):
     return {
         "sede": {"lat": sede[0], "lng": sede[1]},
         "jornada_min": jornada,
-        "hora_inicio": config.hora_inicio_jornada.strftime("%H:%M")
-        if config.hora_inicio_jornada
-        else None,
+        # Salida de la sede: inicio de jornada + tiempo de planificación.
+        "hora_inicio": (
+            (
+                datetime.combine(date.min, config.hora_inicio_jornada)
+                + timedelta(minutes=config.minutos_planificacion)
+            ).strftime("%H:%M")
+            if config.hora_inicio_jornada
+            else None
+        ),
         "fuente_tiempos": resultado.fuente_tiempos,
         "rutas": [
             {
