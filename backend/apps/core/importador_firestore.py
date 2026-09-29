@@ -91,6 +91,31 @@ def punto(coordenadas) -> Point | None:
     return Point(lng, lat, srid=4326)
 
 
+def sin_decimales(coordenadas) -> dict | None:
+    """Algunas coordenadas se guardaron sin el punto decimal (-799114261149843 en vez de
+    -79.9114261149843). Corre la coma hasta que cada grado sea válido; None si no hay
+    nada que corregir."""
+    try:
+        lat, lng = float(coordenadas["latitude"]), float(coordenadas["longitude"])
+    except (TypeError, KeyError, ValueError):
+        return None
+    corregidas = {}
+    for campo, valor, limite in (("latitude", lat, 90), ("longitude", lng, 180)):
+        divisiones = 0
+        while abs(valor) > limite * 10**divisiones:
+            divisiones += 1
+        corregidas[campo] = valor / 10**divisiones
+    return corregidas if (corregidas["latitude"], corregidas["longitude"]) != (lat, lng) else None
+
+
+def opcion(choices, valor) -> str | None:
+    """Valor de un TextChoices sin distinguir mayúsculas, tildes ni separadores
+    ('no completada' → 'no_completada')."""
+    por_clave = {clave(etiqueta): v for v, etiqueta in choices.choices}
+    por_clave.update({clave(v): v for v in choices.values})
+    return por_clave.get(clave(valor))
+
+
 def texto(valor, largo: int | None = None) -> str:
     t = "" if valor is None else str(valor).strip()
     return t[:largo] if largo else t
@@ -122,6 +147,9 @@ class Importador:
         self.catalogos: dict[type, dict[str, object]] = {}
         self.usuarios = {u.firebase_uid: u for u in User.objects.exclude(firebase_uid=None)}
         self.tipos_trabajo_por_id: dict[str, cat.TipoTrabajo] = {}
+        self.tipos_trabajo_por_nombre: dict[tuple[int, str], cat.TipoTrabajo] = {}
+        # (qué, valor original, valor asignado) → cuántos registros; se avisa al final.
+        self.valores_desconocidos: Counter = Counter()
         self._desconocido = None
 
     # --- lectura -----------------------------------------------------------------
@@ -154,9 +182,32 @@ class Importador:
                 )
         return self._desconocido
 
+    def ubicar(self, coordenadas, contexto: str) -> Point | None:
+        ubicacion = punto(coordenadas)
+        corregidas = None if ubicacion else sin_decimales(coordenadas)
+        if corregidas and (ubicacion := punto(corregidas)):
+            self.informe.aviso(
+                f"{contexto}: coordenadas sin punto decimal "
+                f"({coordenadas['latitude']}, {coordenadas['longitude']}); se corrigieron a "
+                f"{corregidas['latitude']}, {corregidas['longitude']}. Revísalas."
+            )
+        return ubicacion
+
+    def estado(self, choices, valor, defecto: str, que: str) -> str:
+        """Traduce un estado o tipo de Firestore; si no se reconoce usa `defecto` y lo
+        anota para el informe."""
+        encontrado = opcion(choices, valor)
+        if encontrado is None:
+            if valor not in (None, ""):
+                self.valores_desconocidos[(que, str(valor), defecto)] += 1
+            return defecto
+        return encontrado
+
     def catalogo(self, modelo, valor, etiqueta=None):
         """Busca por valor o etiqueta (sin distinguir tildes ni mayúsculas); si no
-        existe, lo crea para no perder el dato."""
+        existe, lo crea para no perder el dato. El valor y la etiqueta de Firestore
+        quedan como alias: appConfiguration puede decir {value: "ViaCosta", label:
+        "Vía a la Costa"} y los equipos guardar cualquiera de los dos."""
         if valor in (None, "") and not etiqueta:
             return None
         indice = self.catalogos.get(modelo)
@@ -166,34 +217,40 @@ class Importador:
                 indice.setdefault(clave(obj.valor), obj)
                 indice.setdefault(clave(obj.etiqueta), obj)
             self.catalogos[modelo] = indice
-        for candidato in (valor, etiqueta):
-            if clave(candidato) in indice:
-                return indice[clave(candidato)]
-        nuevo_valor = slugify(str(valor or etiqueta))[:60] or "sin-valor"
-        obj, creado = modelo.objects.get_or_create(
-            valor=nuevo_valor, defaults={"etiqueta": texto(etiqueta or valor, 120)}
-        )
-        if creado:
-            self.informe.creados[modelo._meta.verbose_name_plural] += 1
-            self.informe.aviso(f"Se añadió «{obj.etiqueta}» a {modelo._meta.verbose_name_plural}.")
-        indice[clave(valor)] = indice[clave(obj.etiqueta)] = obj
+        obj = next((indice[clave(c)] for c in (valor, etiqueta) if clave(c) in indice), None)
+        if obj is None:
+            nuevo_valor = slugify(str(valor or etiqueta))[:60] or "sin-valor"
+            obj, creado = modelo.objects.get_or_create(
+                valor=nuevo_valor, defaults={"etiqueta": texto(etiqueta or valor, 120)}
+            )
+            if creado:
+                self.informe.creados[modelo._meta.verbose_name_plural] += 1
+                self.informe.aviso(
+                    f"Se añadió «{obj.etiqueta}» a {modelo._meta.verbose_name_plural}."
+                )
+        for alias in (valor, etiqueta, obj.valor, obj.etiqueta):
+            if clave(alias):
+                indice.setdefault(clave(alias), obj)
         return obj
 
     def tipo_trabajo(self, referencia, tipo_equipo, minutos=None) -> cat.TipoTrabajo:
-        """La solicitud guarda el ID del tipo de trabajo (o su nombre en datos antiguos)."""
+        """La solicitud guarda el ID del tipo de trabajo o, en datos antiguos, su nombre;
+        el nombre se busca solo entre los del tipo de equipo ("Instalación" existe para
+        colectores y para repetidores)."""
         if referencia in self.tipos_trabajo_por_id:
             return self.tipos_trabajo_por_id[referencia]
         nombre = texto(referencia, 120) or "Sin especificar"
-        tt, creado = cat.TipoTrabajo.objects.get_or_create(
-            tipo_equipo=tipo_equipo,
-            nombre=nombre,
-            defaults={"tiempo_estimado_minutos": minutos or 30},
-        )
-        if creado:
+        llave = (tipo_equipo.pk, clave(nombre))
+        if llave not in self.tipos_trabajo_por_nombre:
+            for tt in cat.TipoTrabajo.objects.filter(tipo_equipo=tipo_equipo):
+                self.tipos_trabajo_por_nombre.setdefault((tipo_equipo.pk, clave(tt.nombre)), tt)
+        if llave not in self.tipos_trabajo_por_nombre:
+            self.tipos_trabajo_por_nombre[llave] = cat.TipoTrabajo.objects.create(
+                tipo_equipo=tipo_equipo, nombre=nombre, tiempo_estimado_minutos=minutos or 30
+            )
             self.informe.creados["tipos de trabajo"] += 1
             self.informe.aviso(f"Se añadió el tipo de trabajo «{nombre}» para {tipo_equipo}.")
-        self.tipos_trabajo_por_id[referencia] = tt
-        return tt
+        return self.tipos_trabajo_por_nombre[llave]
 
     # --- colecciones -------------------------------------------------------------
 
@@ -207,6 +264,10 @@ class Importador:
         self.planes()
         self.notificaciones()
         self.fotos_de_perfil()
+        for (que, valor, asignado), cuantos in sorted(self.valores_desconocidos.items()):
+            self.informe.aviso(
+                f"{cuantos} {que} con valor desconocido «{valor}»: quedaron como «{asignado}»."
+            )
         return self.informe
 
     def configuracion(self):
@@ -215,8 +276,13 @@ class Importador:
         if not ajustes:
             return
         for campo, modelo in CATALOGOS.items():
-            for orden, opcion in enumerate(ajustes.get(campo) or []):
-                obj = self.catalogo(modelo, opcion.get("value"), opcion.get("label"))
+            for orden, item in enumerate(ajustes.get(campo) or []):
+                valor, etiqueta = item.get("value"), item.get("label")
+                if modelo is cat.RespuestaPredefinida:
+                    # La app antigua insertaba `value` (el texto completo) y usaba `label`
+                    # solo en el botón; la nueva inserta la etiqueta.
+                    etiqueta = valor or etiqueta
+                obj = self.catalogo(modelo, valor, etiqueta)
                 if obj and obj.orden != orden:
                     obj.orden = orden
                     obj.save(update_fields=["orden"])
@@ -236,14 +302,17 @@ class Importador:
                 )
                 if tt.get("id"):
                     self.tipos_trabajo_por_id[tt["id"]] = obj
-                self.tipos_trabajo_por_id.setdefault(nombre, obj)
+                self.tipos_trabajo_por_nombre[(tipo_equipo.pk, clave(nombre))] = obj
 
         for loc in ajustes.get("localidades") or []:
-            ubicacion = punto(loc.get("coordenadas"))
-            if loc.get("nombre") and ubicacion:
+            nombre = texto(loc.get("nombre"), 120)
+            ubicacion = self.ubicar(loc.get("coordenadas"), f"Localidad «{nombre}»")
+            if nombre and ubicacion:
                 cat.Localidad.objects.update_or_create(
-                    nombre=texto(loc["nombre"], 120), defaults={"ubicacion": ubicacion}
+                    nombre=nombre, defaults={"ubicacion": ubicacion}
                 )
+            else:
+                self.informe.aviso(f"Localidad «{nombre}»: sin nombre o coordenadas; se omite.")
 
         c = cat.Configuracion.get_solo()
         c.empresa_nombre = texto(ajustes.get("empresaNombre"), 150) or c.empresa_nombre
@@ -316,7 +385,7 @@ class Importador:
                 self.informe.existentes["equipos"] += 1
                 continue
             adicionales = dict(d.get("camposAdicionales") or {})
-            ubicacion = punto(d.get("coordenadas"))
+            ubicacion = self.ubicar(d.get("coordenadas"), f"Equipo {codigo}")
             if ubicacion is None:
                 ubicacion = sede
                 adicionales["ubicacion_pendiente"] = True
@@ -407,7 +476,7 @@ class Importador:
                     f"{d.get('equipoId')} no existe; se omite."
                 )
                 continue
-            estado = d.get("estado") if d.get("estado") in Solicitud.Estado.values else "pendiente"
+            estado = self.estado(Solicitud.Estado, d.get("estado"), "pendiente", "solicitudes")
             solicitada = fecha_hora(d.get("fechaSolicitud")) or timezone.now()
             display_id = texto(d.get("displayId"), 30)
             if not display_id or display_id in display_usados:
@@ -474,12 +543,9 @@ class Importador:
                 self._trabajo(orden, secuencia, t, equipos, solicitudes, codigos_trabajo)
 
             estados = list(orden.trabajos.values_list("estado", flat=True))
-            original = d.get("estadoGeneral")
-            orden.estado_general = (
-                original
-                if original in OrdenDeTrabajo.Estado.values
-                else OrdenDeTrabajo.calcular_estado(estados)
-            )
+            orden.estado_general = opcion(
+                OrdenDeTrabajo.Estado, d.get("estadoGeneral")
+            ) or OrdenDeTrabajo.calcular_estado(estados)
             orden.save(update_fields=["estado_general"])
             self.informe.creados["órdenes de trabajo"] += 1
 
@@ -496,7 +562,7 @@ class Importador:
         codigo = texto(t.get("id"), 40)
         if not codigo or codigo in codigos_usados:
             codigo = f"{orden.display_id}-T{secuencia}"
-        estado = t.get("estado") if t.get("estado") in Trabajo.Estado.values else "Pendiente"
+        estado = self.estado(Trabajo.Estado, t.get("estado"), "Pendiente", "trabajos")
         trabajo = Trabajo.objects.create(
             orden=orden,
             codigo=codigo,
@@ -540,10 +606,8 @@ class Importador:
             if d["id"] in existentes:
                 self.informe.existentes["planes de mantenimiento"] += 1
                 continue
-            estado = (
-                d.get("estado")
-                if d.get("estado") in PlanMantenimiento.Estado.values
-                else "borrador"
+            estado = self.estado(
+                PlanMantenimiento.Estado, d.get("estado"), "borrador", "planes de mantenimiento"
             )
             plan = PlanMantenimiento.objects.create(
                 firestore_id=d["id"],
@@ -570,10 +634,11 @@ class Importador:
                         equipo=equipo,
                         fecha_programada=fecha,
                         solicitud=solicitudes.get(m.get("solicitudId")),
-                        estado=(
-                            m.get("estado")
-                            if m.get("estado") in MantenimientoProgramado.Estado.values
-                            else "programado"
+                        estado=self.estado(
+                            MantenimientoProgramado.Estado,
+                            m.get("estado"),
+                            "programado",
+                            "mantenimientos programados",
                         ),
                         motivo_prioridad=texto(m.get("motivoPrioridad")),
                     )
@@ -585,7 +650,14 @@ class Importador:
         existentes = set(
             Notificacion.objects.exclude(firestore_id=None).values_list("firestore_id", flat=True)
         )
-        nuevas, omitidas = [], 0
+        # Firestore enlazaba con su ID de documento; la app nueva usa la clave primaria.
+        ids_nuevos = dict(
+            OrdenDeTrabajo.objects.exclude(firestore_id=None).values_list("firestore_id", "pk")
+        )
+        ids_nuevos.update(
+            Solicitud.objects.exclude(firestore_id=None).values_list("firestore_id", "pk")
+        )
+        nuevas, omitidas, sin_destino = [], 0, 0
         for d in self.leer("notificaciones"):
             if d["id"] in existentes:
                 self.informe.existentes["notificaciones"] += 1
@@ -594,20 +666,27 @@ class Importador:
             if not usuario:
                 omitidas += 1
                 continue
+            entidad_id, entidad_url = texto(d.get("entidadId")), texto(d.get("entidadUrl"))
+            if entidad_id in ids_nuevos:
+                pk = str(ids_nuevos[entidad_id])
+                entidad_url = entidad_url.replace(f"/{entidad_id}", f"/{pk}")
+                entidad_id = pk
+            elif entidad_id and f"/{entidad_id}" in entidad_url:
+                # Apunta a algo que no se migró: se enlaza al listado.
+                entidad_url = entidad_url.split(f"/{entidad_id}")[0]
+                sin_destino += 1
             nuevas.append(
                 Notificacion(
                     firestore_id=d["id"],
                     usuario=usuario,
                     mensaje=texto(d.get("mensaje")),
-                    tipo=(
-                        d.get("tipo")
-                        if d.get("tipo") in Notificacion.Tipo.values
-                        else Notificacion.Tipo.INFO_GENERAL
+                    tipo=self.estado(
+                        Notificacion.Tipo, d.get("tipo"), "info_general", "notificaciones"
                     ),
                     fecha_creacion=fecha_hora(d.get("fechaCreacion")) or timezone.now(),
                     leida=bool(d.get("leida")),
-                    entidad_id=texto(d.get("entidadId"), 60),
-                    entidad_url=texto(d.get("entidadUrl"), 255),
+                    entidad_id=entidad_id[:60],
+                    entidad_url=entidad_url[:255],
                     creada_por=self.usuario(d.get("creadaPor")),
                 )
             )
@@ -615,6 +694,11 @@ class Importador:
         self.informe.creados["notificaciones"] += len(nuevas)
         if omitidas:
             self.informe.aviso(f"{omitidas} notificaciones de usuarios no migrados se omitieron.")
+        if sin_destino:
+            self.informe.aviso(
+                f"{sin_destino} notificaciones apuntaban a registros no migrados; "
+                "ahora enlazan al listado."
+            )
 
     def fotos_de_perfil(self):
         for d in self.leer("users"):

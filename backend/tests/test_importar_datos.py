@@ -9,7 +9,15 @@ from django.core.management import call_command
 
 from apps.accounts.models import User
 from apps.assets.models import Equipo, Vehiculo
-from apps.catalogs.models import Configuracion, Marca, TipoTrabajo, Urgencia
+from apps.catalogs.models import (
+    Configuracion,
+    Localidad,
+    Marca,
+    RespuestaPredefinida,
+    TipoTrabajo,
+    Urgencia,
+    Zona,
+)
 from apps.core.importador_firestore import Importador, Informe, descargar_fotos
 from apps.notifications.models import Notificacion
 from apps.operations.models import (
@@ -58,8 +66,19 @@ EXPORTACION = {
                 {"value": "Honeywell", "label": "Honeywell"},
                 {"value": "Landis", "label": "Landis+Gyr"},
             ],
-            "zonasEquipos": [{"value": "Vía a la Costa", "label": "Vía a la Costa"}],
+            # El valor de Firestore no coincide con el del catálogo nuevo (via-a-la-costa).
+            "zonasEquipos": [{"value": "ViaCosta", "label": "Vía a la Costa"}],
+            "respuestasPredefinidasSolicitudes": [
+                {"value": "No comunica desde hoy.", "label": "No comunica"}
+            ],
             "tiposEquipos": [
+                {
+                    "value": "Repetidor",
+                    "label": "Repetidor",
+                    "tiposDeTrabajoAsociados": [
+                        {"id": "inst_rep", "nombre": "Instalación", "tiempoEstimadoMinutos": 90}
+                    ],
+                },
                 {
                     "value": "Colector",
                     "label": "Colector",
@@ -68,16 +87,22 @@ EXPORTACION = {
                             "id": "tt-antena",
                             "nombre": "Revisión de antena",
                             "tiempoEstimadoMinutos": 45,
-                        }
+                        },
+                        {"id": "inst_col", "nombre": "Instalación", "tiempoEstimadoMinutos": 105},
                     ],
-                }
+                },
             ],
             "urgenciasSolicitudes": [
                 {"value": "Urgente", "label": "Urgente"},
                 {"value": "Normal", "label": "Normal"},
             ],
             "localidades": [
-                {"nombre": "Playas", "coordenadas": {"latitude": -2.63, "longitude": -80.39}}
+                {"nombre": "Playas", "coordenadas": {"latitude": -2.63, "longitude": -80.39}},
+                # Guardada sin el punto decimal en la longitud.
+                {
+                    "nombre": "Planta Norte",
+                    "coordenadas": {"latitude": -2.142292349813585, "longitude": -799114261149843},
+                },
             ],
         }
     ],
@@ -116,7 +141,7 @@ EXPORTACION = {
             "id": "COL-002",
             "tipo": "Colector",
             "marca": "Honeywell",
-            "zona": "Vía a la Costa",
+            "zona": "ViaCosta",
             "direccion": "Sin GPS",
             "ip": "no-es-ip",
             "tipoComunicacion": "Celular",
@@ -146,7 +171,18 @@ EXPORTACION = {
             "tipoTrabajo": "Cambio de batería",  # dato antiguo: nombre, no ID
             "urgencia": "Normal",
             "creadoPor": "u-borrado",
-            "estado": "pendiente",
+            "estado": "no completada",
+        },
+        {
+            "id": "s4",
+            "displayId": "SOL-20250612-ZZ99Z",
+            "equipoId": "COL-001",
+            "fechaSolicitud": "2025-06-09T20:00:00.000Z",
+            "fechaProgramada": "2025-06-12T05:00:00.000Z",
+            "tipoTrabajo": "Instalación",  # nombre que también existe para repetidores
+            "urgencia": "Normal",
+            "creadoPor": "u-admin",
+            "estado": "archivada",
         },
         {"id": "s3", "equipoId": "NO-EXISTE", "tipoTrabajo": "tt-antena", "creadoPor": "u-admin"},
     ],
@@ -203,6 +239,17 @@ EXPORTACION = {
             "leida": False,
             "fechaCreacion": "2025-06-10T13:00:00.000Z",
             "creadaPor": "u-admin",
+            "entidadId": "ot1",
+            "entidadUrl": "/work-orders/ot1",
+        },
+        {
+            "id": "n3",
+            "userId": "u-tec",
+            "mensaje": "Trabajo completado",
+            "tipo": "trabajo_completado",
+            "creadaPor": "u-admin",
+            "entidadId": "ot-borrada",
+            "entidadUrl": "/work-orders/ot-borrada",
         },
         {"id": "n2", "userId": "u-borrado", "mensaje": "x"},
     ],
@@ -241,6 +288,11 @@ def test_importa_todo_conservando_identificadores(exportacion):
     assert Urgencia.objects.filter(valor="urgente").count() == 1
     assert not Urgencia.objects.filter(valor="Urgente").exists()
     assert Marca.objects.get(etiqueta="Landis+Gyr").valor == "landis"
+    assert Zona.objects.filter(etiqueta="Vía a la Costa").count() == 1
+    assert not Zona.objects.filter(valor="viacosta").exists()
+    assert RespuestaPredefinida.objects.get().etiqueta == "No comunica desde hoy."
+    norte = Localidad.objects.get(nombre="Planta Norte").ubicacion
+    assert (norte.x, norte.y) == (pytest.approx(-79.9114261149843), pytest.approx(-2.1422923))
 
     e1 = Equipo.objects.get(codigo="COL-001")
     assert (e1.tipo.valor, e1.zona.valor, e1.estado.valor) == (
@@ -253,6 +305,7 @@ def test_importa_todo_conservando_identificadores(exportacion):
     e2 = Equipo.objects.get(codigo="COL-002")
     assert e2.campos_adicionales == {"ubicacion_pendiente": True, "ip_original": "no-es-ip"}
     assert e2.ip is None and e2.estado.valor == "activo"
+    assert e2.zona == e1.zona
 
     v = Vehiculo.objects.get(codigo="V1")
     assert v.placa == "GPA-0001" and v.custodio.email == "tec@example.com"
@@ -269,6 +322,13 @@ def test_importa_todo_conservando_identificadores(exportacion):
     assert s2.display_id.startswith("SOL-")  # no tenía displayId: se genera
     assert s2.tipo_trabajo.nombre == "Cambio de batería"
     assert s2.creado_por.email == "desconocido@migracion.invalid"
+    assert s2.estado == "no_completada"
+    s4 = Solicitud.objects.get(firestore_id="s4")
+    assert (s4.tipo_trabajo.nombre, s4.tipo_trabajo.tipo_equipo.valor) == (
+        "Instalación",
+        "colector",
+    )
+    assert s4.estado == "pendiente"
     assert not Solicitud.objects.filter(firestore_id="s3").exists()
 
     ot = OrdenDeTrabajo.objects.get(firestore_id="ot1")
@@ -287,7 +347,18 @@ def test_importa_todo_conservando_identificadores(exportacion):
 
     n = Notificacion.objects.get(firestore_id="n1")
     assert n.usuario.email == "tec@example.com" and n.creada_por.email == "admin@example.com"
-    assert Notificacion.objects.count() == 1
+    assert (n.entidad_id, n.entidad_url) == (str(ot.pk), f"/work-orders/{ot.pk}")
+    assert Notificacion.objects.get(firestore_id="n3").entidad_url == "/work-orders"
+    assert Notificacion.objects.count() == 2
+
+
+def test_avisa_de_lo_que_no_encaja(exportacion, capsys):
+    importar(exportacion)
+    avisos = capsys.readouterr().err
+    assert "Localidad «Planta Norte»: coordenadas sin punto decimal" in avisos
+    assert "1 solicitudes con valor desconocido «archivada»: quedaron como «pendiente»" in avisos
+    assert "1 notificaciones apuntaban a registros no migrados" in avisos
+    assert "a zonas" not in avisos  # ViaCosta es la zona que ya existía
 
 
 def test_es_idempotente(exportacion):
