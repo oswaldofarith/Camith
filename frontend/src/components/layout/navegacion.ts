@@ -25,9 +25,15 @@ export const NAVEGACION: ItemNavegacion[] = [
   { href: "/settings", label: "Configuración", icon: Icons.settings, roles: ["administrador"] },
 ];
 
+/** Subrutas con permisos más restrictivos que su sección. */
+const RUTAS_RESTRINGIDAS: Pick<ItemNavegacion, "href" | "roles">[] = [
+  { href: "/work-orders/create", roles: ["administrador", "supervisor"] },
+  { href: "/requests/create", roles: ["administrador", "supervisor", "ingenieroDeOficina"] },
+];
+
 /** Roles que pueden entrar a una ruta (la más específica que coincida). */
 export function rolesDeRuta(pathname: string): Rol[] | null {
-  const item = NAVEGACION.filter((i) => pathname === i.href || pathname.startsWith(`${i.href}/`)).sort(
+  const item = [...NAVEGACION, ...RUTAS_RESTRINGIDAS].filter((i) => pathname === i.href || pathname.startsWith(`${i.href}/`)).sort(
     (a, b) => b.href.length - a.href.length,
   )[0];
   return item?.roles ?? null;

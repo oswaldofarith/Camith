@@ -229,6 +229,32 @@ def borrar_orden(request, orden_id: int):
 # --- Trabajos ---------------------------------------------------------------------
 
 
+@router.get("/trabajos", response=list[TrabajoOut])
+@paginate(PageNumberPagination, page_size=50)
+def listar_trabajos(
+    request,
+    equipo: str | None = None,
+    estado: list[str] = Query(None),
+    tecnico: int | None = None,
+    desde: date | None = None,
+    hasta: date | None = None,
+):
+    """Historial de trabajos. `desde`/`hasta` filtran por fecha de la orden."""
+    exigir_permiso(request, "operations.view_trabajo")
+    qs = _trabajos()
+    if equipo:
+        qs = qs.filter(equipo__codigo=equipo)
+    if estado:
+        qs = qs.filter(estado__in=estado)
+    if tecnico:
+        qs = qs.filter(orden__unidades_asignadas__tecnicos=tecnico).distinct()
+    if desde:
+        qs = qs.filter(orden__fecha_creacion__date__gte=desde)
+    if hasta:
+        qs = qs.filter(orden__fecha_creacion__date__lte=hasta)
+    return qs.order_by("-orden__fecha_creacion", "secuencia")
+
+
 @router.get("/trabajos/mios", response=list[TrabajoOut])
 def mis_trabajos(
     request,
@@ -384,7 +410,9 @@ def borrar_plan(request, plan_id: int):
     return Status(204, None)
 
 
-@router.post("/planes-mantenimiento/{int:plan_id}/generar-solicitudes", response=GenerarSolicitudesOut)
+@router.post(
+    "/planes-mantenimiento/{int:plan_id}/generar-solicitudes", response=GenerarSolicitudesOut
+)
 def generar_solicitudes(request, plan_id: int, payload: GenerarSolicitudesIn):
     exigir_permiso(request, "operations.change_planmantenimiento", "operations.add_solicitud")
     plan = get_object_or_404(PlanMantenimiento, pk=plan_id)

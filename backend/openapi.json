@@ -2189,6 +2189,141 @@
         ]
       }
     },
+    "/api/trabajos": {
+      "get": {
+        "operationId": "apps_operations_api_listar_trabajos",
+        "summary": "Listar Trabajos",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "equipo",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Equipo"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "estado",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Estado",
+              "type": "array"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "tecnico",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tecnico"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Desde"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Hasta"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedTrabajoOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Historial de trabajos. `desde`/`hasta` filtran por fecha de la orden.",
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
     "/api/trabajos/mios": {
       "get": {
         "operationId": "apps_operations_api_mis_trabajos",
@@ -5723,6 +5858,27 @@
           "tecnicos"
         ],
         "title": "UnidadAsignadaIn",
+        "type": "object"
+      },
+      "PagedTrabajoOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TrabajoOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "PagedTrabajoOut",
         "type": "object"
       },
       "ReporteIn": {

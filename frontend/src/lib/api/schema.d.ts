@@ -554,6 +554,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/trabajos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Trabajos
+         * @description Historial de trabajos. `desde`/`hasta` filtran por fecha de la orden.
+         */
+        get: operations["apps_operations_api_listar_trabajos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/trabajos/mios": {
         parameters: {
             query?: never;
@@ -1763,6 +1783,13 @@ export interface components {
             vehiculo: string;
             /** Tecnicos */
             tecnicos: number[];
+        };
+        /** PagedTrabajoOut */
+        PagedTrabajoOut: {
+            /** Items */
+            items: components["schemas"]["TrabajoOut"][];
+            /** Count */
+            count: number;
         };
         /**
          * ReporteIn
@@ -3166,6 +3193,34 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    apps_operations_api_listar_trabajos: {
+        parameters: {
+            query?: {
+                equipo?: string | null;
+                estado?: string[];
+                tecnico?: number | null;
+                desde?: string | null;
+                hasta?: string | null;
+                page?: number;
+                page_size?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedTrabajoOut"];
+                };
             };
         };
     };

@@ -419,3 +419,11 @@ def test_listados_sin_consultas_n_mas_1(actores, orden, django_assert_max_num_qu
         supervisor.get("/api/ordenes")
     with django_assert_max_num_queries(10):
         actores["tecnico"].get("/api/trabajos/mios")
+
+
+def test_historial_de_trabajos_por_equipo(actores, orden, equipo):
+    datos = actores["ingeniero"].get(f"/api/trabajos?equipo={equipo.codigo}").json()
+    assert datos["count"] == 2
+    assert datos["items"][0]["equipo"]["codigo"] == equipo.codigo
+    assert actores["ingeniero"].get("/api/trabajos?equipo=OTRO").json()["count"] == 0
+    assert actores["ingeniero"].get("/api/trabajos?estado=Completado").json()["count"] == 0
