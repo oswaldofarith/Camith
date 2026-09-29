@@ -1,15 +1,19 @@
-import type React from 'react';
+import type React from "react";
 
 interface PageHeaderProps {
   title: string;
-  children?: React.ReactNode; // For action buttons or other elements
+  description?: string;
+  children?: React.ReactNode; // Botones de acción
 }
 
-export function PageHeader({ title, children }: PageHeaderProps) {
+export function PageHeader({ title, description, children }: PageHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-6 pb-2 border-b">
-      <h1 className="text-3xl font-headline font-semibold text-primary">{title}</h1>
-      {children && <div className="flex items-center gap-2">{children}</div>}
+    <div className="mb-6 flex flex-col gap-3 border-b pb-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h1 className="text-primary text-2xl font-semibold md:text-3xl">{title}</h1>
+        {description && <p className="text-muted-foreground mt-1 text-sm">{description}</p>}
+      </div>
+      {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
     </div>
   );
 }

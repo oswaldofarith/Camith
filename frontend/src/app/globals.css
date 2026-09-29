@@ -1,111 +1,137 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fontsource-variable/inter";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@custom-variant dark (&:is(.dark *));
 
-@layer base {
-  :root {
-    --background: 0 0% 100%; /* Blanco */
-    --foreground: 208 30% 28%; /* #30475E - Azul oscuro para contraste */
+/* Paleta corporativa (idéntica a la versión anterior). */
+:root {
+  --radius: 0.5rem;
 
-    --card: 0 0% 100%; /* Blanco */
-    --card-foreground: 208 30% 28%; /* Azul oscuro */
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(208 30% 28%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(208 30% 28%);
+  --popover: hsl(0 0% 98%);
+  --popover-foreground: hsl(208 30% 28%);
+  --primary: hsl(217 63% 31%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(198 30% 49%);
+  --secondary-foreground: hsl(0 0% 100%);
+  --muted: hsl(0 0% 96.1%);
+  --muted-foreground: hsl(0 0% 45.1%);
+  --accent: hsl(351 69% 46%);
+  --accent-foreground: hsl(0 0% 100%);
+  --destructive: hsl(0 84.2% 60.2%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(0 0% 89.8%);
+  --input: hsl(0 0% 89.8%);
+  --ring: hsl(217 63% 31%);
 
-    --popover: 0 0% 98%; /* Blanco hueso */
-    --popover-foreground: 208 30% 28%; /* Azul oscuro */
+  --chart-1: hsl(217 63% 31%);
+  --chart-2: hsl(198 30% 49%);
+  --chart-3: hsl(160 60% 45%);
+  --chart-4: hsl(25 78% 54%);
+  --chart-5: hsl(280 65% 60%);
 
-    --primary: 217 63% 31%; /* #1C4481 */
-    --primary-foreground: 0 0% 100%; /* Blanco */
+  --sidebar: hsl(210 40% 96.1%);
+  --sidebar-foreground: hsl(208 30% 28%);
+  --sidebar-primary: hsl(217 63% 31%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(210 40% 90%);
+  --sidebar-accent-foreground: hsl(208 30% 28%);
+  --sidebar-border: hsl(210 40% 85%);
+  --sidebar-ring: hsl(217 63% 31%);
+}
 
-    --secondary: 198 30% 49%; /* #588BA1 */
-    --secondary-foreground: 0 0% 100%; /* Blanco */
+.dark {
+  --background: hsl(220 15% 15%);
+  --foreground: hsl(210 20% 95%);
+  --card: hsl(220 15% 15%);
+  --card-foreground: hsl(210 20% 95%);
+  --popover: hsl(220 15% 12%);
+  --popover-foreground: hsl(210 20% 95%);
+  --primary: hsl(217 63% 45%);
+  --primary-foreground: hsl(217 63% 95%);
+  --secondary: hsl(198 30% 65%);
+  --secondary-foreground: hsl(198 30% 10%);
+  --muted: hsl(220 15% 20%);
+  --muted-foreground: hsl(210 15% 65%);
+  --accent: hsl(351 69% 60%);
+  --accent-foreground: hsl(351 69% 10%);
+  --destructive: hsl(0 70% 50%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(220 15% 30%);
+  --input: hsl(220 15% 30%);
+  --ring: hsl(217 63% 45%);
 
-    --muted: 0 0% 96.1%; /* slate-100 - Gris muy claro */
-    --muted-foreground: 0 0% 45.1%; /* slate-500 - Gris medio */
+  --chart-1: hsl(217 63% 55%);
+  --chart-2: hsl(198 30% 65%);
+  --chart-3: hsl(160 60% 50%);
+  --chart-4: hsl(25 78% 60%);
+  --chart-5: hsl(280 65% 70%);
 
-    --accent: 351 69% 46%; /* #C7233B */
-    --accent-foreground: 0 0% 100%; /* Blanco */
+  --sidebar: hsl(220 15% 12%);
+  --sidebar-foreground: hsl(210 20% 90%);
+  --sidebar-primary: hsl(217 63% 45%);
+  --sidebar-primary-foreground: hsl(217 63% 95%);
+  --sidebar-accent: hsl(220 15% 22%);
+  --sidebar-accent-foreground: hsl(0 0% 100%);
+  --sidebar-border: hsl(220 15% 25%);
+  --sidebar-ring: hsl(217 63% 45%);
+}
 
-    --destructive: 0 84.2% 60.2%; /* Rojo estándar ShadCN */
-    --destructive-foreground: 0 0% 98%; /* Casi blanco */
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 
-    --border: 0 0% 89.8%; /* slate-200 - Gris claro para bordes */
-    --input: 0 0% 89.8%; /* slate-200 - Gris claro para inputs */
-    --ring: 217 63% 31%; /* #1C4481 - Mismo que primario */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 
-    --radius: 0.5rem;
-
-    /* Chart colors */
-    --chart-1: hsl(var(--primary));
-    --chart-2: hsl(var(--secondary));
-    --chart-3: 160 60% 45%; /* Un verde azulado */
-    --chart-4: 25 78% 54%; /* #E47A2E */
-    --chart-5: 280 65% 60%; /* Un púrpura */
-
-    /* Sidebar specific theme variables - Light Theme */
-    --sidebar-background: 210 40% 96.1%; /* Gris Claro (slate-100) */
-    --sidebar-foreground: hsl(var(--foreground)); /* Azul oscuro */
-
-    --sidebar-primary: hsl(var(--primary));
-    --sidebar-primary-foreground: hsl(var(--primary-foreground));
-
-    --sidebar-accent: 210 40% 90%; /* Gris un poco más oscuro para hover */
-    --sidebar-accent-foreground: hsl(var(--foreground));
-
-    --sidebar-border: 210 40% 85%; /* Gris para bordes internos de sidebar */
-    --sidebar-ring: hsl(var(--ring));
-  }
-
-  .dark {
-    --background: 220 15% 15%;
-    --foreground: 210 20% 95%;
-
-    --card: 220 15% 15%;
-    --card-foreground: 210 20% 95%;
-
-    --popover: 220 15% 12%;
-    --popover-foreground: 210 20% 95%;
-
-    --primary: 217 63% 45%; /* #1C4481 mas claro para modo oscuro */
-    --primary-foreground: 217 63% 95%; /* Texto muy claro sobre primario */
-
-    --secondary: 198 30% 65%; /* #588BA1 más claro */
-    --secondary-foreground: 198 30% 10%; /* Texto oscuro sobre secundario claro */
-
-    --muted: 220 15% 20%;
-    --muted-foreground: 210 15% 65%;
-
-    --accent: 351 69% 60%; /* #C7233B más claro */
-    --accent-foreground: 351 69% 10%; /* Texto oscuro sobre acento claro */
-
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 15% 30%;
-    --input: 220 15% 30%;
-    --ring: 217 63% 45%; /* Mismo que --primary (dark) */
-
-    /* Dark Sidebar specific theme variables */
-    --sidebar-background: 220 15% 12%; /* Fondo oscuro para sidebar */
-    --sidebar-foreground: 210 20% 90%; /* Texto claro para sidebar */
-
-    --sidebar-primary: hsl(var(--primary));
-    --sidebar-primary-foreground: hsl(var(--primary-foreground));
-
-    --sidebar-accent: 220 15% 22%; /* Acento oscuro para hover en sidebar */
-    --sidebar-accent-foreground: 0 0% 100%; /* Texto claro sobre acento */
-
-    --sidebar-border: 220 15% 25%; /* Borde oscuro para sidebar */
-    --sidebar-ring: hsl(var(--ring));
-  }
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 }

@@ -84,3 +84,26 @@ def test_docs_solo_para_staff(client, crear_usuario):
     client.login(email="admin@example.com", password="clave-segura-123")
     assert client.get("/api/docs").status_code == 200
     assert client.get("/api/openapi.json").status_code == 200
+
+
+def test_login_con_csrf_desde_el_origen_del_frontend(crear_usuario, settings):
+    """En desarrollo el navegador envía Origin del frontend (Next reenvía /api)."""
+    from django.test import Client
+
+    crear_usuario(email="tec@example.com", password="clave-segura-123")
+    cliente = Client(enforce_csrf_checks=True)
+    token = cliente.get("/api/csrf").json()["csrfToken"]
+    resp = cliente.post(
+        LOGIN_URL,
+        data=json.dumps({"email": "tec@example.com", "password": "clave-segura-123"}),
+        content_type="application/json",
+        headers={"X-CSRFToken": token, "Origin": settings.FRONTEND_URL},
+    )
+    assert resp.status_code == 200, resp.content[:200]
+    otro = cliente.post(
+        LOGIN_URL,
+        data="{}",
+        content_type="application/json",
+        headers={"X-CSRFToken": token, "Origin": "https://sitio-malicioso.example"},
+    )
+    assert otro.status_code == 403

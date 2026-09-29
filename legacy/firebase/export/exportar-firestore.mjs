@@ -1,7 +1,7 @@
 // Exporta Firestore y las cuentas de Firebase Auth a JSON para importarlos en Django.
 //
-// Uso (desde frontend/, con serviceAccountKey.json en esa carpeta):
-//   node scripts/exportar-firestore.mjs ../firestore-export
+// Uso (desde legacy/firebase/export/, con serviceAccountKey.json en esa carpeta):
+//   npm install && npm run exportar   (genera firestore-export/ en la raíz)
 //
 // Genera un archivo <coleccion>.json por colección y auth_users.json.
 // No exporta contraseñas: los usuarios las recuperan desde la nueva app.

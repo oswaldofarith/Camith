@@ -1,0 +1,111 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%; /* Blanco */
+    --foreground: 208 30% 28%; /* #30475E - Azul oscuro para contraste */
+
+    --card: 0 0% 100%; /* Blanco */
+    --card-foreground: 208 30% 28%; /* Azul oscuro */
+
+    --popover: 0 0% 98%; /* Blanco hueso */
+    --popover-foreground: 208 30% 28%; /* Azul oscuro */
+
+    --primary: 217 63% 31%; /* #1C4481 */
+    --primary-foreground: 0 0% 100%; /* Blanco */
+
+    --secondary: 198 30% 49%; /* #588BA1 */
+    --secondary-foreground: 0 0% 100%; /* Blanco */
+
+    --muted: 0 0% 96.1%; /* slate-100 - Gris muy claro */
+    --muted-foreground: 0 0% 45.1%; /* slate-500 - Gris medio */
+
+    --accent: 351 69% 46%; /* #C7233B */
+    --accent-foreground: 0 0% 100%; /* Blanco */
+
+    --destructive: 0 84.2% 60.2%; /* Rojo estándar ShadCN */
+    --destructive-foreground: 0 0% 98%; /* Casi blanco */
+
+    --border: 0 0% 89.8%; /* slate-200 - Gris claro para bordes */
+    --input: 0 0% 89.8%; /* slate-200 - Gris claro para inputs */
+    --ring: 217 63% 31%; /* #1C4481 - Mismo que primario */
+
+    --radius: 0.5rem;
+
+    /* Chart colors */
+    --chart-1: hsl(var(--primary));
+    --chart-2: hsl(var(--secondary));
+    --chart-3: 160 60% 45%; /* Un verde azulado */
+    --chart-4: 25 78% 54%; /* #E47A2E */
+    --chart-5: 280 65% 60%; /* Un púrpura */
+
+    /* Sidebar specific theme variables - Light Theme */
+    --sidebar-background: 210 40% 96.1%; /* Gris Claro (slate-100) */
+    --sidebar-foreground: hsl(var(--foreground)); /* Azul oscuro */
+
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
+
+    --sidebar-accent: 210 40% 90%; /* Gris un poco más oscuro para hover */
+    --sidebar-accent-foreground: hsl(var(--foreground));
+
+    --sidebar-border: 210 40% 85%; /* Gris para bordes internos de sidebar */
+    --sidebar-ring: hsl(var(--ring));
+  }
+
+  .dark {
+    --background: 220 15% 15%;
+    --foreground: 210 20% 95%;
+
+    --card: 220 15% 15%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 220 15% 12%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 217 63% 45%; /* #1C4481 mas claro para modo oscuro */
+    --primary-foreground: 217 63% 95%; /* Texto muy claro sobre primario */
+
+    --secondary: 198 30% 65%; /* #588BA1 más claro */
+    --secondary-foreground: 198 30% 10%; /* Texto oscuro sobre secundario claro */
+
+    --muted: 220 15% 20%;
+    --muted-foreground: 210 15% 65%;
+
+    --accent: 351 69% 60%; /* #C7233B más claro */
+    --accent-foreground: 351 69% 10%; /* Texto oscuro sobre acento claro */
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 30%;
+    --input: 220 15% 30%;
+    --ring: 217 63% 45%; /* Mismo que --primary (dark) */
+
+    /* Dark Sidebar specific theme variables */
+    --sidebar-background: 220 15% 12%; /* Fondo oscuro para sidebar */
+    --sidebar-foreground: 210 20% 90%; /* Texto claro para sidebar */
+
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
+
+    --sidebar-accent: 220 15% 22%; /* Acento oscuro para hover en sidebar */
+    --sidebar-accent-foreground: 0 0% 100%; /* Texto claro sobre acento */
+
+    --sidebar-border: 220 15% 25%; /* Borde oscuro para sidebar */
+    --sidebar-ring: hsl(var(--ring));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+}

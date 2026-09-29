@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Users,
   Truck,
-  Server,
   ClipboardList,
   UsersRound,
   FilePlus2,
@@ -50,11 +49,12 @@ import {
   Tv,
   GanttChart,
   List,
+  ClipboardCheck,
 } from 'lucide-react';
 import type React from "react";
 
 const CamittLogo: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" xmlSpace="preserve" width="1360px" height="391px" version="1.1" style={{shapeRendering:'geometricPrecision', textRendering:'geometricPrecision', imageRendering:'optimizeQuality', fillRule:'evenodd', clipRule:'evenodd'}}
+  <svg xmlns="http://www.w3.org/2000/svg" xmlSpace="preserve" width="1360px" height="391px" version="1.1" style={{shapeRendering:'geometricPrecision', textRendering:'geometricPrecision', fillRule:'evenodd', clipRule:'evenodd'}}
 viewBox="0 0 541.93 155.8"
  {...props}>
  <defs>
@@ -84,7 +84,7 @@ viewBox="0 0 541.93 155.8"
 
 const CamittLogoIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink"
-	 viewBox="0 0 334 393" style={{enableBackground:'new 0 0 334 393'}} xmlSpace="preserve" {...props}>
+	 viewBox="0 0 334 393" xmlSpace="preserve" {...props}>
 <style type="text/css">
 {`
 	.st0{fill-rule:evenodd;clip-rule:evenodd;fill:#60688D;}
@@ -163,4 +163,5 @@ export const Icons = {
   key: KeyRound,
   tv: Tv,
   list: List,
+  myJobs: ClipboardCheck,
 };

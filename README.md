@@ -4,8 +4,10 @@ Gestión de operaciones de campo: solicitudes, órdenes de trabajo, equipos,
 vehículos, cuadrillas, planificación de rutas y reportes.
 
 > **Migración en curso.** La aplicación se está migrando de Firebase a
-> **Django + PostgreSQL/PostGIS**, autoalojada en un VPS. El frontend en
-> `frontend/` todavía usa Firebase hasta completar la fase 3.
+> **Django + PostgreSQL/PostGIS**, autoalojada en un VPS. Durante la fase 3 las
+> pantallas se reescriben una a una en `frontend/src/` contra la nueva API; el
+> código anterior queda como referencia en `frontend/legacy-src/` (fuera del
+> build) y se eliminará al terminar la fase.
 
 ## Estructura del repositorio
 
@@ -103,10 +105,14 @@ uv run python manage.py runserver        # http://localhost:8000/admin/
 uv run pytest
 uv run ruff check . && uv run ruff format --check .
 
-# Frontend (en otra terminal)
+# Frontend (en otra terminal). Next reenvía /api y /media a Django.
 cd frontend
 npm install
 npm run dev                              # http://localhost:3000
+
+# Si cambia la API: regenerar el esquema y los tipos del frontend
+cd backend && uv run python manage.py export_openapi_schema --api config.api.api --output openapi.json --indent 2
+cd frontend && npm run api:types
 ```
 
 ## Despliegue en el VPS

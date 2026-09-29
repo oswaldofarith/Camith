@@ -32,7 +32,15 @@ def listar(request, no_leidas: bool = False):
     return qs.filter(leida=False) if no_leidas else qs
 
 
-@router.get("/conteo")
+class ConteoOut(Schema):
+    no_leidas: int
+
+
+class MarcadasOut(Schema):
+    marcadas: int
+
+
+@router.get("/conteo", response=ConteoOut)
 def conteo(request):
     return {"no_leidas": Notificacion.objects.filter(usuario=request.user, leida=False).count()}
 
@@ -45,7 +53,7 @@ def marcar_leida(request, notificacion_id: int):
     return notificacion
 
 
-@router.post("/leer-todas")
+@router.post("/leer-todas", response=MarcadasOut)
 def marcar_todas(request):
     n = Notificacion.objects.filter(usuario=request.user, leida=False).update(leida=True)
     return {"marcadas": n}

@@ -1,7 +1,5 @@
+import { redirect } from "next/navigation";
 
-import { redirect } from 'next/navigation';
-
-export default function HomePage() {
-  redirect('/dashboard');
-  return null; 
+export default function Inicio() {
+  redirect("/dashboard");
 }

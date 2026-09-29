@@ -1,0 +1,12 @@
+{
+  "name": "camith-exportar-firestore",
+  "private": true,
+  "type": "module",
+  "description": "Exporta Firestore y Firebase Auth a JSON para importarlos en Django.",
+  "scripts": {
+    "exportar": "node exportar-firestore.mjs ../../../firestore-export"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.1.1"
+  }
+}

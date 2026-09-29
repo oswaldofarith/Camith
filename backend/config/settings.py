@@ -20,10 +20,12 @@ environ.Env.read_env(BASE_DIR / ".env", overwrite=False)
 DEBUG = env("DJANGO_DEBUG")
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="insecure-dev-key" if DEBUG else environ.Env.NOTSET)
 ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS")
-CSRF_TRUSTED_ORIGINS = env("DJANGO_CSRF_TRUSTED_ORIGINS")
-
 # URL pública del frontend (Next.js); se usa en los enlaces de los correos.
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000").rstrip("/")
+
+# El frontend siempre es un origen de confianza para CSRF (en desarrollo Next
+# reenvía /api a Django, así que el Origin del navegador es el del frontend).
+CSRF_TRUSTED_ORIGINS = list({*env("DJANGO_CSRF_TRUSTED_ORIGINS"), FRONTEND_URL})
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -37,6 +39,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.headless",
     "solo",
+    "ninja",
     "apps.core",
     "apps.accounts",
     "apps.catalogs",
