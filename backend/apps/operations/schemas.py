@@ -265,10 +265,16 @@ class MantenimientoOut(Schema):
         return obj.equipo.codigo
 
 
+class ExclusionIn(Schema):
+    campo: Literal["tipo", "marca", "zona", "zonaPeligrosa"]
+    operador: Literal["es", "no_es"]
+    valor: bool | str
+
+
 class PlanIn(Schema):
     nombre: str = Field(min_length=1)
     tiempo_de_ejecucion_dias: int = Field(gt=0)
-    exclusiones: list[dict[str, Any]] = []
+    exclusiones: list[ExclusionIn] = []
     estado: Literal["borrador", "activo", "completado", "archivado"] = "borrador"
     estadisticas: dict[str, Any] = {}
     calendario: list[MantenimientoIn] = []
@@ -298,8 +304,34 @@ class PlanDetalleOut(PlanOut):
         return list(obj.calendario.all())
 
 
+class GenerarPlanIn(Schema):
+    """Parámetros del planificador de reglas fijas."""
+
+    nombre: str = Field(min_length=1)
+    tiempo_de_ejecucion_dias: int = Field(gt=0, description="Días hábiles del plan")
+    exclusiones: list[ExclusionIn] = []
+    fecha_inicio: date | None = None  # por defecto, hoy
+
+
+class ProgramacionOut(Schema):
+    equipo: str
+    fecha_programada: date
+    motivo_prioridad: str
+
+    @staticmethod
+    def resolve_equipo(obj):
+        return obj.equipo.codigo
+
+
+class PrevisualizacionOut(Schema):
+    total_equipos_considerados: int
+    total_equipos_excluidos: int
+    calendario: list[ProgramacionOut]
+
+
 class GenerarSolicitudesIn(Schema):
     items: list[int] | None = None  # None = todos los programados
+    # Se crea en cada tipo de equipo si aún no existe.
     tipo_trabajo: str = "Mantenimiento preventivo"
     urgencia: str = "normal"
 

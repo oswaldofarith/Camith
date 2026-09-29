@@ -197,7 +197,7 @@ def crear_tipo_trabajo(request, payload: TipoTrabajoIn):
     return Status(201, obj)
 
 
-@router.patch("/tipos-trabajo/{tipo_id}", response=TipoTrabajoOut)
+@router.patch("/tipos-trabajo/{int:tipo_id}", response=TipoTrabajoOut)
 def editar_tipo_trabajo(request, tipo_id: int, payload: TipoTrabajoPatch):
     exigir_permiso(request, "catalogs.change_tipotrabajo")
     obj = get_object_or_404(models.TipoTrabajo, pk=tipo_id)
@@ -208,7 +208,7 @@ def editar_tipo_trabajo(request, tipo_id: int, payload: TipoTrabajoPatch):
     return obj
 
 
-@router.delete("/tipos-trabajo/{tipo_id}", response={204: None})
+@router.delete("/tipos-trabajo/{int:tipo_id}", response={204: None})
 def borrar_tipo_trabajo(request, tipo_id: int):
     exigir_permiso(request, "catalogs.delete_tipotrabajo")
     get_object_or_404(models.TipoTrabajo, pk=tipo_id).delete()
@@ -229,7 +229,7 @@ def crear_localidad(request, payload: LocalidadIn):
     return Status(201, obj)
 
 
-@router.put("/localidades/{localidad_id}", response=LocalidadOut)
+@router.put("/localidades/{int:localidad_id}", response=LocalidadOut)
 def editar_localidad(request, localidad_id: int, payload: LocalidadIn):
     exigir_permiso(request, "catalogs.change_localidad")
     obj = get_object_or_404(models.Localidad, pk=localidad_id)
@@ -240,7 +240,7 @@ def editar_localidad(request, localidad_id: int, payload: LocalidadIn):
     return obj
 
 
-@router.delete("/localidades/{localidad_id}", response={204: None})
+@router.delete("/localidades/{int:localidad_id}", response={204: None})
 def borrar_localidad(request, localidad_id: int):
     exigir_permiso(request, "catalogs.delete_localidad")
     get_object_or_404(models.Localidad, pk=localidad_id).delete()

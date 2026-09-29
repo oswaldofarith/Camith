@@ -37,7 +37,7 @@ def conteo(request):
     return {"no_leidas": Notificacion.objects.filter(usuario=request.user, leida=False).count()}
 
 
-@router.post("/{notificacion_id}/leer", response=NotificacionOut)
+@router.post("/{int:notificacion_id}/leer", response=NotificacionOut)
 def marcar_leida(request, notificacion_id: int):
     notificacion = get_object_or_404(Notificacion, pk=notificacion_id, usuario=request.user)
     notificacion.leida = True

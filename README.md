@@ -62,7 +62,7 @@ modifican datos exigen además el encabezado `X-CSRFToken`.
 | Unidades de campo | `GET/PUT /api/unidades-campo` |
 | Órdenes de trabajo | `/api/ordenes` (crear varias a la vez, listar, detalle, borrar) |
 | Trabajos | `GET /api/trabajos/mios`, `…/{id}/reportar` (técnico), `…/{id}/revisar` (ingeniero/supervisor), `…/{id}/cancelar`, `…/{id}/fotos` |
-| Mantenimiento | `/api/planes-mantenimiento` (CRUD), `…/{id}/generar-solicitudes` |
+| Mantenimiento | `/api/planes-mantenimiento` (CRUD), `…/previsualizar` y `…/generar` (planificador de reglas fijas), `…/{id}/generar-solicitudes` (crea el tipo de trabajo “Mantenimiento preventivo” si falta) |
 | Notificaciones | `GET /api/notificaciones`, `…/conteo`, `…/{id}/leer`, `…/leer-todas` |
 | Dashboard | `GET /api/dashboard/kpis` |
 | Admin | `/admin/`: panel de administración de Django |
@@ -70,6 +70,12 @@ modifican datos exigen además el encabezado `X-CSRFToken`.
 La lógica de negocio (estados de trabajos, sincronización con la solicitud,
 conteo de revisiones del equipo y notificaciones) está en
 `backend/apps/*/services.py` y se ejecuta en una transacción.
+
+El planificador de mantenimiento (`backend/apps/operations/planificador.py`) no
+usa IA: toma los equipos activos que no cumplen ninguna exclusión, prioriza los
+nunca revisados, luego la revisión más antigua, la fabricación más antigua y el
+mayor número de revisiones, y los reparte por igual entre los días hábiles del
+plazo. Cada mantenimiento indica su motivo concreto.
 
 Los permisos de cada rol están en `backend/apps/accounts/roles.py` y se aplican
 con `python manage.py sync_roles` (idempotente; el contenedor lo ejecuta al

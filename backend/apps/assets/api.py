@@ -144,7 +144,7 @@ def mapa_equipos(request, estado: str | None = None):
     }
 
 
-# Debe declararse antes de /equipos/{codigo} para que esa ruta no la capture.
+# Debe declararse antes de /equipos/{codigo}: esa ruta captura cualquier texto.
 @router.post("/equipos/lote", response=ResultadoLote)
 def importar_equipos(request, payload: list[EquipoIn]):
     """Crea o actualiza equipos por `codigo` (importación desde CSV/Excel)."""

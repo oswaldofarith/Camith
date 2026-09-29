@@ -369,21 +369,28 @@ def test_plan_de_mantenimiento(actores, equipo, tipo_trabajo):
     assert "Plan 2026" in solicitud.descripcion
 
 
-def test_plan_reporta_tipos_de_trabajo_faltantes(actores, equipo):
+def test_plan_crea_el_tipo_de_trabajo_si_falta(actores, equipo):
     supervisor = actores["supervisor"]
     plan = supervisor.post(
         "/api/planes-mantenimiento",
         {
             "nombre": "P",
             "tiempo_de_ejecucion_dias": 30,
-            "calendario": [{"equipo": equipo.codigo, "fecha_programada": "2026-11-01"}],
+            "calendario": [
+                {"equipo": equipo.codigo, "fecha_programada": "2026-11-01"},
+                {"equipo": equipo.codigo, "fecha_programada": "2026-12-01"},
+            ],
         },
         content_type=JSON,
     ).json()
     resp = supervisor.post(
         f"/api/planes-mantenimiento/{plan['id']}/generar-solicitudes", {}, content_type=JSON
     ).json()
-    assert resp["creadas"] == 0 and equipo.codigo in resp["errores"][0]
+    assert resp == {"creadas": 2, "errores": []}
+    # Se creó una sola vez para el tipo de equipo y se reutilizó.
+    tipos = TipoTrabajo.objects.filter(tipo_equipo=equipo.tipo, nombre="Mantenimiento preventivo")
+    assert tipos.count() == 1
+    assert tipos.get().tiempo_estimado_minutos == 60
 
 
 # --- Notificaciones ---------------------------------------------------------------------

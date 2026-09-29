@@ -25,6 +25,7 @@ from .models import (
     Trabajo,
     TrabajoFoto,
 )
+from .planificador import planificar, validar_exclusiones
 
 User = get_user_model()
 T = Trabajo.Estado
@@ -32,6 +33,9 @@ S = Solicitud.Estado
 N = Notificacion.Tipo
 
 MAX_FOTOS_POR_TRABAJO = 5
+# Duración del tipo de trabajo de mantenimiento cuando la API lo crea sola
+# (el mismo valor por defecto que usaba el frontend para las solicitudes).
+MINUTOS_MANTENIMIENTO_POR_DEFECTO = 60
 
 # --- Permisos a nivel de objeto -------------------------------------------------
 
@@ -410,8 +414,39 @@ def agregar_fotos(trabajo: Trabajo, archivos: list, usuario) -> list[TrabajoFoto
 
 
 @transaction.atomic
+def generar_plan(datos: dict, usuario) -> PlanMantenimiento:
+    """Calcula el calendario con el planificador de reglas y guarda el plan activo."""
+    resultado = planificar(
+        datos["exclusiones"], datos["tiempo_de_ejecucion_dias"], datos.get("fecha_inicio")
+    )
+    return crear_plan(
+        {
+            "nombre": datos["nombre"],
+            "tiempo_de_ejecucion_dias": datos["tiempo_de_ejecucion_dias"],
+            "exclusiones": datos["exclusiones"],
+            "estado": PlanMantenimiento.Estado.ACTIVO,
+            "estadisticas": {
+                "totalEquiposConsiderados": resultado.total_equipos_considerados,
+                "totalEquiposExcluidos": resultado.total_equipos_excluidos,
+                "totalMantenimientosProgramados": len(resultado.calendario),
+            },
+            "calendario": [
+                {
+                    "equipo": p.equipo.codigo,
+                    "fecha_programada": p.fecha_programada,
+                    "motivo_prioridad": p.motivo_prioridad,
+                }
+                for p in resultado.calendario
+            ],
+        },
+        usuario,
+    )
+
+
+@transaction.atomic
 def crear_plan(datos: dict, usuario) -> PlanMantenimiento:
     calendario = datos.pop("calendario", [])
+    validar_exclusiones(datos.get("exclusiones", []))
     plan = PlanMantenimiento(creado_por=usuario, **datos)
     plan.full_clean()
     plan.save()
@@ -452,15 +487,15 @@ def generar_solicitudes_plan(
         qs = qs.filter(pk__in=items)
     creadas, errores = 0, []
     for item in qs:
+        # Se crea la primera vez para cada tipo de equipo (p. ej., "Mantenimiento
+        # preventivo" en Colector, Medidor...), con la duración por defecto.
         tipo = TipoTrabajo.objects.filter(
             tipo_equipo_id=item.equipo.tipo_id, nombre__iexact=nombre_tipo_trabajo
-        ).first()
-        if not tipo:
-            errores.append(
-                f"{item.equipo.codigo}: su tipo de equipo no tiene el trabajo "
-                f"'{nombre_tipo_trabajo}'."
-            )
-            continue
+        ).first() or TipoTrabajo.objects.create(
+            tipo_equipo_id=item.equipo.tipo_id,
+            nombre=nombre_tipo_trabajo,
+            tiempo_estimado_minutos=MINUTOS_MANTENIMIENTO_POR_DEFECTO,
+        )
         solicitud = crear_solicitud(
             {
                 "equipo": item.equipo.codigo,

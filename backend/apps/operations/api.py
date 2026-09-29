@@ -22,8 +22,10 @@ from .models import (
     TrabajoFoto,
     UnidadDeCampo,
 )
+from .planificador import planificar
 from .schemas import (
     FotoOut,
+    GenerarPlanIn,
     GenerarSolicitudesIn,
     GenerarSolicitudesOut,
     KpisOut,
@@ -35,6 +37,7 @@ from .schemas import (
     PlanIn,
     PlanOut,
     PlanPatch,
+    PrevisualizacionOut,
     ReporteIn,
     RevisionIn,
     SolicitudIn,
@@ -84,7 +87,7 @@ def listar_solicitudes(
     return qs
 
 
-@router.get("/solicitudes/{solicitud_id}", response=SolicitudOut)
+@router.get("/solicitudes/{int:solicitud_id}", response=SolicitudOut)
 def obtener_solicitud(request, solicitud_id: int):
     exigir_permiso(request, "operations.view_solicitud")
     return get_object_or_404(_solicitudes(), pk=solicitud_id)
@@ -97,7 +100,7 @@ def crear_solicitud(request, payload: SolicitudIn):
     return Status(201, _solicitudes().get(pk=solicitud.pk))
 
 
-@router.patch("/solicitudes/{solicitud_id}", response=SolicitudOut)
+@router.patch("/solicitudes/{int:solicitud_id}", response=SolicitudOut)
 def editar_solicitud(request, solicitud_id: int, payload: SolicitudPatch):
     exigir_permiso(request, "operations.change_solicitud")
     solicitud = get_object_or_404(Solicitud, pk=solicitud_id)
@@ -105,7 +108,7 @@ def editar_solicitud(request, solicitud_id: int, payload: SolicitudPatch):
     return _solicitudes().get(pk=solicitud_id)
 
 
-@router.post("/solicitudes/{solicitud_id}/cancelar", response=SolicitudOut)
+@router.post("/solicitudes/{int:solicitud_id}/cancelar", response=SolicitudOut)
 def cancelar_solicitud(request, solicitud_id: int, payload: MotivoIn):
     exigir_permiso(request, "operations.change_solicitud")
     solicitud = get_object_or_404(Solicitud, pk=solicitud_id)
@@ -113,7 +116,7 @@ def cancelar_solicitud(request, solicitud_id: int, payload: MotivoIn):
     return _solicitudes().get(pk=solicitud_id)
 
 
-@router.delete("/solicitudes/{solicitud_id}", response={204: None})
+@router.delete("/solicitudes/{int:solicitud_id}", response={204: None})
 def borrar_solicitud(request, solicitud_id: int):
     """Falla con 409 si la solicitud ya forma parte de una orden de trabajo."""
     exigir_permiso(request, "operations.delete_solicitud")
@@ -202,7 +205,7 @@ def listar_ordenes(
     return qs
 
 
-@router.get("/ordenes/{orden_id}", response=OrdenDetalleOut)
+@router.get("/ordenes/{int:orden_id}", response=OrdenDetalleOut)
 def obtener_orden(request, orden_id: int):
     exigir_permiso(request, "operations.view_ordendetrabajo")
     return get_object_or_404(_ordenes(con_trabajos=True), pk=orden_id)
@@ -216,7 +219,7 @@ def crear_ordenes(request, payload: list[OrdenIn]):
     return Status(201, list(_ordenes(con_trabajos=True).filter(pk__in=[o.pk for o in ordenes])))
 
 
-@router.delete("/ordenes/{orden_id}", response={204: None})
+@router.delete("/ordenes/{int:orden_id}", response={204: None})
 def borrar_orden(request, orden_id: int):
     exigir_permiso(request, "operations.delete_ordendetrabajo")
     services.eliminar_orden(get_object_or_404(OrdenDeTrabajo, pk=orden_id))
@@ -249,13 +252,13 @@ def _trabajo(trabajo_id: int) -> Trabajo:
     return get_object_or_404(Trabajo.objects.select_related("orden"), pk=trabajo_id)
 
 
-@router.get("/trabajos/{trabajo_id}", response=TrabajoOut)
+@router.get("/trabajos/{int:trabajo_id}", response=TrabajoOut)
 def obtener_trabajo(request, trabajo_id: int):
     exigir_permiso(request, "operations.view_trabajo")
     return get_object_or_404(_trabajos(), pk=trabajo_id)
 
 
-@router.post("/trabajos/{trabajo_id}/reportar", response=TrabajoOut)
+@router.post("/trabajos/{int:trabajo_id}/reportar", response=TrabajoOut)
 def reportar_trabajo(request, trabajo_id: int, payload: ReporteIn):
     """El técnico asignado (o un supervisor) marca el trabajo como completado o no."""
     trabajo = _trabajo(trabajo_id)
@@ -273,7 +276,7 @@ def reportar_trabajo(request, trabajo_id: int, payload: ReporteIn):
     return obtener_trabajo(request, trabajo_id)
 
 
-@router.post("/trabajos/{trabajo_id}/revisar", response=TrabajoOut)
+@router.post("/trabajos/{int:trabajo_id}/revisar", response=TrabajoOut)
 def revisar_trabajo(request, trabajo_id: int, payload: RevisionIn):
     """Ingeniero, supervisor o administrador: cambia el estado u observa el trabajo."""
     exigir(services.puede_revisar(request.user))
@@ -284,7 +287,7 @@ def revisar_trabajo(request, trabajo_id: int, payload: RevisionIn):
     return obtener_trabajo(request, trabajo_id)
 
 
-@router.post("/trabajos/{trabajo_id}/cancelar", response=TrabajoOut)
+@router.post("/trabajos/{int:trabajo_id}/cancelar", response=TrabajoOut)
 def cancelar_trabajo(request, trabajo_id: int, payload: MotivoIn):
     trabajo = _trabajo(trabajo_id)
     exigir(services.puede_gestionar_ot(request.user))
@@ -295,7 +298,7 @@ def cancelar_trabajo(request, trabajo_id: int, payload: MotivoIn):
     return obtener_trabajo(request, trabajo_id)
 
 
-@router.post("/trabajos/{trabajo_id}/fotos", response={201: list[FotoOut]})
+@router.post("/trabajos/{int:trabajo_id}/fotos", response={201: list[FotoOut]})
 def subir_fotos(request, trabajo_id: int, fotos: File[list[UploadedFile]]):
     trabajo = _trabajo(trabajo_id)
     exigir(
@@ -308,7 +311,7 @@ def subir_fotos(request, trabajo_id: int, fotos: File[list[UploadedFile]]):
     return Status(201, services.agregar_fotos(trabajo, fotos, request.user))
 
 
-@router.delete("/trabajos/{trabajo_id}/fotos/{foto_id}", response={204: None})
+@router.delete("/trabajos/{int:trabajo_id}/fotos/{int:foto_id}", response={204: None})
 def borrar_foto(request, trabajo_id: int, foto_id: int):
     foto = get_object_or_404(TrabajoFoto, pk=foto_id, trabajo_id=trabajo_id)
     exigir(foto.subida_por_id == request.user.pk or services.puede_gestionar_ot(request.user))
@@ -332,7 +335,7 @@ def _plan(plan_id: int):
     )
 
 
-@router.get("/planes-mantenimiento/{plan_id}", response=PlanDetalleOut)
+@router.get("/planes-mantenimiento/{int:plan_id}", response=PlanDetalleOut)
 def obtener_plan(request, plan_id: int):
     exigir_permiso(request, "operations.view_planmantenimiento")
     return _plan(plan_id)
@@ -345,7 +348,25 @@ def crear_plan(request, payload: PlanIn):
     return Status(201, _plan(plan.pk))
 
 
-@router.patch("/planes-mantenimiento/{plan_id}", response=PlanDetalleOut)
+@router.post("/planes-mantenimiento/previsualizar", response=PrevisualizacionOut)
+def previsualizar_plan(request, payload: GenerarPlanIn):
+    """Calcula el calendario sin guardarlo."""
+    exigir_permiso(request, "operations.view_planmantenimiento")
+    datos = payload.dict()
+    return planificar(
+        datos["exclusiones"], datos["tiempo_de_ejecucion_dias"], datos["fecha_inicio"]
+    )
+
+
+@router.post("/planes-mantenimiento/generar", response={201: PlanDetalleOut})
+def generar_plan(request, payload: GenerarPlanIn):
+    """Calcula el calendario con reglas fijas y guarda el plan como activo."""
+    exigir_permiso(request, "operations.add_planmantenimiento")
+    plan = services.generar_plan(payload.dict(), request.user)
+    return Status(201, _plan(plan.pk))
+
+
+@router.patch("/planes-mantenimiento/{int:plan_id}", response=PlanDetalleOut)
 def editar_plan(request, plan_id: int, payload: PlanPatch):
     exigir_permiso(request, "operations.change_planmantenimiento")
     plan = get_object_or_404(PlanMantenimiento, pk=plan_id)
@@ -356,14 +377,14 @@ def editar_plan(request, plan_id: int, payload: PlanPatch):
     return _plan(plan_id)
 
 
-@router.delete("/planes-mantenimiento/{plan_id}", response={204: None})
+@router.delete("/planes-mantenimiento/{int:plan_id}", response={204: None})
 def borrar_plan(request, plan_id: int):
     exigir_permiso(request, "operations.delete_planmantenimiento")
     get_object_or_404(PlanMantenimiento, pk=plan_id).delete()
     return Status(204, None)
 
 
-@router.post("/planes-mantenimiento/{plan_id}/generar-solicitudes", response=GenerarSolicitudesOut)
+@router.post("/planes-mantenimiento/{int:plan_id}/generar-solicitudes", response=GenerarSolicitudesOut)
 def generar_solicitudes(request, plan_id: int, payload: GenerarSolicitudesIn):
     exigir_permiso(request, "operations.change_planmantenimiento", "operations.add_solicitud")
     plan = get_object_or_404(PlanMantenimiento, pk=plan_id)

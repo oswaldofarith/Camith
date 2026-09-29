@@ -94,7 +94,7 @@ def listar_usuarios(request, rol: str | None = None, activo: bool | None = None,
     return qs
 
 
-@router.get("/usuarios/{user_id}", response=UsuarioDetalleOut)
+@router.get("/usuarios/{int:user_id}", response=UsuarioDetalleOut)
 def obtener_usuario(request, user_id: int):
     exigir_permiso(request, "accounts.view_user")
     return get_object_or_404(_usuarios().prefetch_related("estado_historial"), pk=user_id)
@@ -132,7 +132,7 @@ def crear_usuario(request, payload: UsuarioIn):
     return Status(201, _usuarios().get(pk=user.pk))
 
 
-@router.patch("/usuarios/{user_id}", response=UsuarioDetalleOut)
+@router.patch("/usuarios/{int:user_id}", response=UsuarioDetalleOut)
 def editar_usuario(request, user_id: int, payload: UsuarioPatch):
     exigir_permiso(request, "accounts.change_user")
     user = get_object_or_404(User, pk=user_id)
@@ -159,7 +159,7 @@ def editar_usuario(request, user_id: int, payload: UsuarioPatch):
     return _usuarios().get(pk=user.pk)
 
 
-@router.post("/usuarios/{user_id}/estado", response=UsuarioDetalleOut)
+@router.post("/usuarios/{int:user_id}/estado", response=UsuarioDetalleOut)
 def cambiar_estado(request, user_id: int, payload: EstadoIn):
     exigir_permiso(request, "accounts.change_user")
     user = get_object_or_404(User, pk=user_id)
@@ -171,7 +171,7 @@ def cambiar_estado(request, user_id: int, payload: EstadoIn):
     return _usuarios().get(pk=user.pk)
 
 
-@router.post("/usuarios/{user_id}/password-temporal", response=UsuarioDetalleOut)
+@router.post("/usuarios/{int:user_id}/password-temporal", response=UsuarioDetalleOut)
 def asignar_password_temporal(request, user_id: int, payload: PasswordTemporalIn):
     """El administrador fija una contraseña que el usuario deberá cambiar al entrar."""
     exigir_permiso(request, "accounts.change_user")
