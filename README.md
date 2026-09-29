@@ -152,8 +152,8 @@ docker compose --profile mapas up -d    # arranca el servicio osrm
 ## Migración de datos desde Firebase
 
 1. Exportar Firestore y las cuentas de Auth (desde `legacy/firebase/export/`,
-   con `serviceAccountKey.json` en esa carpeta o su contenido en la variable
-   `FIREBASE_SERVICE_ACCOUNT`):
+   con `serviceAccountKey.json` en esa carpeta o su contenido en base64 en la
+   variable `FIREBASE_SERVICE_ACCOUNT_B64`):
    `npm install && npm run exportar` (genera `firestore-export/` en la raíz)
 2. Copiar `firestore-export/` al VPS, probar con `--simular` y luego importar:
    ```bash
