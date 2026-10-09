@@ -28,7 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api, unwrap } from "@/lib/api/client";
-import { etiqueta, useCatalogos, useUsuarios } from "@/lib/api/hooks";
+import { etiqueta, useCatalogos, useDirectorio } from "@/lib/api/hooks";
 import type { Vehiculo } from "@/lib/api/types";
 
 const IMAGENES: Record<string, string> = {
@@ -41,7 +41,7 @@ const SIN_CUSTODIO = "__ninguno__";
 function FormularioVehiculo({ vehiculo, onCerrar }: { vehiculo: Vehiculo | "nuevo"; onCerrar: () => void }) {
   const queryClient = useQueryClient();
   const catalogos = useCatalogos();
-  const usuarios = useUsuarios({ activo: true });
+  const usuarios = useDirectorio({ activo: true });
   const existente = vehiculo === "nuevo" ? null : vehiculo;
   const [datos, setDatos] = useState({
     codigo: existente?.codigo ?? "",
@@ -130,7 +130,7 @@ function FormularioVehiculo({ vehiculo, onCerrar }: { vehiculo: Vehiculo | "nuev
 export default function VehiculosPage() {
   const queryClient = useQueryClient();
   const catalogos = useCatalogos();
-  const usuarios = useUsuarios();
+  const usuarios = useDirectorio();
   const [estado, setEstado] = useState(TODOS);
   const [editando, setEditando] = useState<Vehiculo | "nuevo" | null>(null);
   const [borrando, setBorrando] = useState<Vehiculo | null>(null);

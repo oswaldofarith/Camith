@@ -1,9 +1,13 @@
 import io
+from datetime import UTC, datetime
 
 import pytest
+from django.core.management import call_command
 from PIL import Image
 
+from apps.accounts.models import User
 from apps.accounts.roles import Rol
+from apps.assets.models import Equipo
 from apps.catalogs.models import TipoTrabajo
 from apps.notifications.models import Notificacion
 from apps.operations.models import OrdenDeTrabajo, Solicitud, Trabajo
@@ -439,3 +443,43 @@ def test_tendencias_dashboard(actores, orden):
     hoy = serie[-1]
     assert (hoy["ordenes"], hoy["pendientes"], hoy["completados"]) == (1, 1, 1)
     assert all(d["ordenes"] == 0 for d in serie[:-1])
+
+
+def test_orden_solo_trae_cedulas_de_sus_participantes(actores, orden):
+    cedulas = {"supervisor": "0911111111", "tecnico": "0922222222", "otro_tecnico": "0933333333"}
+    for actor, cedula in cedulas.items():
+        User.objects.filter(pk=actores[actor].user.pk).update(cedula=cedula)
+    resp = actores["tecnico"].get(f"/api/ordenes/{orden['id']}")
+    assert resp.json()["cedulas"] == {
+        str(actores["supervisor"].user.pk): "0911111111",  # creador
+        str(actores["tecnico"].user.pk): "0922222222",  # técnico asignado
+    }
+
+
+def test_recalcular_revisiones(actores, orden, equipo):
+    """Tras la migración los equipos quedaron sin revisiones aunque tenían trabajos."""
+    trabajo = orden["trabajos"][0]
+    actores["tecnico"].post(
+        f"/api/trabajos/{trabajo['id']}/reportar", {"estado": "Completado"}, content_type=JSON
+    )
+    finalizado = Trabajo.objects.get(pk=trabajo["id"]).fecha_finalizacion
+    Equipo.objects.filter(pk=equipo.pk).update(revision_count=0, fecha_ultima_revision=None)
+
+    salida = io.StringIO()
+    call_command("recalcular_revisiones", "--simular", stdout=salida)
+    assert "COL-001: revisiones 0 → 1" in salida.getvalue()
+    equipo.refresh_from_db()
+    assert equipo.revision_count == 0  # la simulación no guarda
+
+    call_command("recalcular_revisiones", stdout=io.StringIO())
+    equipo.refresh_from_db()
+    assert (equipo.revision_count, equipo.fecha_ultima_revision) == (1, finalizado)
+
+    # Nunca baja lo que ya hay (p. ej., historial cargado por Excel).
+    historial = datetime(2030, 1, 1, tzinfo=UTC)
+    Equipo.objects.filter(pk=equipo.pk).update(revision_count=9, fecha_ultima_revision=historial)
+    salida = io.StringIO()
+    call_command("recalcular_revisiones", stdout=salida)
+    assert "ya estaban al día" in salida.getvalue()
+    equipo.refresh_from_db()
+    assert (equipo.revision_count, equipo.fecha_ultima_revision) == (9, historial)

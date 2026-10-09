@@ -5,6 +5,8 @@ type S = components["schemas"];
 
 export type Me = S["MeOut"];
 export type Usuario = S["UsuarioOut"];
+/** Lo que cualquier usuario ve de los demás (sin email ni cédula). */
+export type UsuarioResumen = S["UsuarioResumenOut"];
 export type UsuarioDetalle = S["UsuarioDetalleOut"];
 export type Catalogos = S["CatalogosOut"];
 export type ItemCatalogo = S["ItemOut"];

@@ -11,11 +11,27 @@ URL = "/api/accounts/usuarios"
 JSON = "application/json"
 
 
-def test_todos_ven_usuarios_pero_solo_admin_crea(como):
-    tecnico = como(Rol.TECNICO_DE_CAMPO)
-    assert tecnico.get(URL).status_code == 200
-    resp = tecnico.post(URL, {"email": "n@example.com", "nombre": "N"}, content_type=JSON)
+@pytest.mark.parametrize("rol", [Rol.TECNICO_DE_CAMPO, Rol.INGENIERO_DE_OFICINA, Rol.SUPERVISOR])
+def test_solo_admin_ve_y_crea_fichas_de_usuario(como, crear_usuario, rol):
+    otro = crear_usuario(email="otro@example.com", cedula="0912345678")
+    cliente = como(rol)
+    assert cliente.get(URL).status_code == 403
+    assert cliente.get(f"{URL}/{otro.pk}").status_code == 403
+    resp = cliente.post(URL, {"email": "n@example.com", "nombre": "N"}, content_type=JSON)
     assert resp.status_code == 403
+    assert como(Rol.ADMINISTRADOR).get(URL).status_code == 200
+
+
+def test_directorio_sin_datos_personales(como, crear_usuario):
+    ana = crear_usuario(email="tec@example.com", cedula="0912345678", rol=Rol.TECNICO_DE_CAMPO)
+    User.objects.filter(pk=ana.pk).update(nombre="Ana Técnica")
+    resp = como(Rol.TECNICO_DE_CAMPO, email="yo@example.com").get(
+        "/api/accounts/directorio", {"rol": Rol.TECNICO_DE_CAMPO, "q": "ana"}
+    )
+    assert resp.status_code == 200
+    [ana] = resp.json()
+    assert ana["nombre"] == "Ana Técnica" and ana["perfiles"] == [Rol.TECNICO_DE_CAMPO]
+    assert not {"email", "cedula", "numero_rol", "estado_historial"} & set(ana)
 
 
 def test_admin_crea_usuario_sin_password(como):

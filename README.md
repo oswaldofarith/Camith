@@ -55,10 +55,10 @@ modifican datos exigen además el encabezado `X-CSRFToken`.
 | Sistema | `GET /api/health`, `GET /api/csrf` |
 | Autenticación | `/api/auth/browser/v1/…`: login, logout, sesión, recuperar y cambiar contraseña ([allauth headless](https://docs.allauth.org/en/latest/headless/openapi-specification/)) |
 | Mi perfil | `GET/PATCH /api/accounts/me`, `POST /api/accounts/me/foto` |
-| Usuarios | `/api/accounts/usuarios` (CRUD), `…/{id}/estado` (activar o desactivar con motivo), `…/{id}/password-temporal`, `GET /api/accounts/skills` |
+| Usuarios | `/api/accounts/usuarios` (CRUD, solo administrador: email, cédula, historial), `…/{id}/estado` (activar o desactivar con motivo), `…/{id}/password-temporal`, `GET /api/accounts/directorio` (nombres, roles y habilidades para cualquier rol), `GET /api/accounts/skills` |
 | Catálogos | `GET /api/catalogos` (todo en una respuesta), `/api/catalogos/{marcas\|zonas\|tipos-equipo\|…}`, `…/tipos-trabajo`, `…/localidades`, `PUT …/configuracion` |
 | Vehículos | `/api/vehiculos` (CRUD por código) |
-| Equipos | `/api/equipos` (CRUD por código; filtros por catálogo, texto, cercanía `cerca_lat/cerca_lng/radio_m` y `bbox`), `GET /api/equipos/mapa` (GeoJSON), `POST /api/equipos/lote` (importación) |
+| Equipos | `/api/equipos` (CRUD por código; filtros por catálogo, texto, cercanía `cerca_lat/cerca_lng/radio_m` y `bbox`), `GET /api/equipos/mapa` (GeoJSON), `POST /api/equipos/lote` (importación: en los equipos existentes solo cambia lo que trae el archivo) |
 | Solicitudes | `/api/solicitudes` (CRUD y filtros), `…/{id}/cancelar` |
 | Unidades de campo | `GET/PUT /api/unidades-campo` |
 | Órdenes de trabajo | `/api/ordenes` (crear varias a la vez, listar, detalle, borrar) |
@@ -250,6 +250,11 @@ planes de mantenimiento, notificaciones y las fotos de Firebase Storage.
   migrado» (`desconocido@migracion.invalid`, inactivo).
 - Es idempotente: lo ya importado no se toca, así que se puede repetir.
   `--sin-fotos` omite la descarga de fotos.
+- Firebase no mantenía las revisiones de los equipos (`revisionCount`,
+  `fechaUltimaRevision`): se derivan de los trabajos completados. En una base
+  importada antes de que el importador lo hiciera, ejecutar una vez
+  `python manage.py recalcular_revisiones` (primero con `--simular`). Nunca baja
+  un valor, así que se puede repetir.
 
 Política de contraseñas:
 - **No se envía ningún correo.** Los usuarios importados quedan sin contraseña

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api, unwrap } from "@/lib/api/client";
-import { etiqueta, useCatalogos, useUsuarios } from "@/lib/api/hooks";
+import { etiqueta, useCatalogos, useDirectorio } from "@/lib/api/hooks";
 
 const IMAGENES: Record<string, string> = {
   camionetaCabinaSimple: "/images/camionetaCabinaSimple.webp",
@@ -26,7 +26,7 @@ type Composicion = Record<string, number[]>; // código de vehículo → técnic
 export default function UnidadesCampoPage() {
   const queryClient = useQueryClient();
   const catalogos = useCatalogos();
-  const tecnicos = useUsuarios({ rol: "tecnicoDeCampo", activo: true });
+  const tecnicos = useDirectorio({ rol: "tecnicoDeCampo", activo: true });
   const vehiculos = useQuery({
     queryKey: ["vehiculos", "disponible"],
     queryFn: () => unwrap(api.GET("/api/vehiculos", { params: { query: { estado: "disponible" } } })),

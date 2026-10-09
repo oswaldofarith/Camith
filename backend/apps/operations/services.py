@@ -7,7 +7,7 @@ con la diferencia de que ahora todo ocurre en el servidor y en una transacción.
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
-from django.db.models import F, Max
+from django.db.models import Count, F, Max, Q
 from django.utils import timezone
 
 from apps.accounts.roles import Rol
@@ -329,6 +329,33 @@ def _actualizar_revisiones_equipo(trabajo: Trabajo, estado_anterior: str) -> Non
     else:
         return
     equipo.save(update_fields=["revision_count", "fecha_ultima_revision", "actualizado_en"])
+
+
+def recalcular_revisiones(guardar: bool = True) -> list[tuple[Equipo, int, object]]:
+    """Ajusta revision_count y fecha_ultima_revision a los trabajos completados.
+
+    Solo sube los valores: si un equipo ya tiene más revisiones o una fecha más
+    reciente (p. ej., historial cargado por Excel), se respetan. Devuelve los
+    equipos cambiados con sus valores anteriores (equipo, revisiones, fecha).
+    """
+    completado = Q(trabajos__estado=T.COMPLETADO)
+    equipos = Equipo.objects.annotate(
+        completados=Count("trabajos", filter=completado),
+        ultima=Max("trabajos__fecha_finalizacion", filter=completado),
+    ).order_by("codigo")
+    cambios = []
+    for equipo in equipos:
+        antes = (equipo.revision_count, equipo.fecha_ultima_revision)
+        equipo.revision_count = max(equipo.revision_count, equipo.completados)
+        fechas = [f for f in (equipo.fecha_ultima_revision, equipo.ultima) if f]
+        equipo.fecha_ultima_revision = max(fechas, default=None)
+        if (equipo.revision_count, equipo.fecha_ultima_revision) != antes:
+            cambios.append((equipo, *antes))
+    if guardar and cambios:
+        Equipo.objects.bulk_update(
+            [e for e, *_ in cambios], ["revision_count", "fecha_ultima_revision"]
+        )
+    return cambios
 
 
 def _notificar_cambio_trabajo(trabajo: Trabajo, original: Trabajo, usuario, hubo_observacion):

@@ -20,6 +20,7 @@ from .schemas import (
     UsuarioIn,
     UsuarioOut,
     UsuarioPatch,
+    UsuarioResumenOut,
 )
 
 router = Router(tags=["usuarios"])
@@ -81,14 +82,27 @@ def _usuarios():
     return User.objects.prefetch_related("groups", "habilidades")
 
 
-@router.get("/usuarios", response=list[UsuarioOut])
-def listar_usuarios(request, rol: str | None = None, activo: bool | None = None, q: str = ""):
-    exigir_permiso(request, "accounts.view_user")
-    qs = _usuarios()
+def _filtrar(qs, rol: str | None, activo: bool | None):
     if rol:
         qs = qs.filter(groups__name=rol)
     if activo is not None:
         qs = qs.filter(is_active=activo)
+    return qs
+
+
+@router.get("/directorio", response=list[UsuarioResumenOut])
+def directorio(request, rol: str | None = None, activo: bool | None = None, q: str = ""):
+    """Nombres, roles y habilidades de los usuarios, para cualquier usuario
+    autenticado (asignar técnicos, mostrar quién hizo qué)."""
+    qs = _filtrar(_usuarios(), rol, activo)
+    return qs.filter(nombre__icontains=q) if q else qs
+
+
+@router.get("/usuarios", response=list[UsuarioOut])
+def listar_usuarios(request, rol: str | None = None, activo: bool | None = None, q: str = ""):
+    """Ficha completa (email, cédula...): solo con accounts.view_user (administrador)."""
+    exigir_permiso(request, "accounts.view_user")
+    qs = _filtrar(_usuarios(), rol, activo)
     if q:
         qs = qs.filter(Q(nombre__icontains=q) | Q(email__icontains=q) | Q(cedula__icontains=q))
     return qs

@@ -29,7 +29,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useSesion } from "@/hooks/use-sesion";
 import { api, unwrap } from "@/lib/api/client";
-import { etiqueta, useCatalogos, useUsuarios } from "@/lib/api/hooks";
+import { etiqueta, useCatalogos, useDirectorio } from "@/lib/api/hooks";
 
 import { FormularioEquipo } from "../formulario-equipo";
 
@@ -56,7 +56,7 @@ export default function EquipoPage({ params }: { params: Promise<{ codigo: strin
   const queryClient = useQueryClient();
   const { tieneRol } = useSesion();
   const catalogos = useCatalogos();
-  const usuarios = useUsuarios();
+  const usuarios = useDirectorio();
   const [editando, setEditando] = useState(false);
   const [borrando, setBorrando] = useState(false);
   const [pagina, setPagina] = useState(1);

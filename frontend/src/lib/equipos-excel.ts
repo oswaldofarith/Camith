@@ -10,7 +10,14 @@ import writeXlsxFile from "write-excel-file/browser";
 import type { components } from "./api/schema";
 import type { Catalogos, Equipo, ItemCatalogo } from "./api/types";
 
-type EquipoIn = components["schemas"]["EquipoIn"];
+export type EquipoIn = components["schemas"]["EquipoIn"];
+/**
+ * Fila para POST /api/equipos/lote. En la API los campos con valor por defecto son
+ * opcionales (openapi-typescript los marca obligatorios): así se envían solo las
+ * columnas que trae el archivo.
+ */
+export type EquipoLote = Pick<EquipoIn, "codigo" | "tipo" | "marca" | "zona" | "estado" | "direccion" | "lat" | "lng"> &
+  Partial<EquipoIn>;
 
 export const COLUMNAS = [
   "identificacion",
@@ -31,6 +38,7 @@ export const COLUMNAS = [
   "proximoMantenimientoProgramado (YYYY-MM-DD)",
   "intervaloMantenimientoDias",
   "intervaloMantenimientoRevisiones",
+  "fechaFabricacion (YYYY-MM-DD)",
 ] as const;
 
 const OBLIGATORIAS = ["identificacion", "tipo", "direccion", "marca", "estado", "latitud", "longitud", "zona"];
@@ -73,7 +81,7 @@ function resolver(items: ItemCatalogo[], v: Celda): string | null {
   return items.find((i) => i.valor.toLowerCase() === t || i.etiqueta.toLowerCase() === t)?.valor ?? null;
 }
 
-export type ResultadoLectura = { equipos: EquipoIn[]; errores: string[] };
+export type ResultadoLectura = { equipos: EquipoLote[]; errores: string[] };
 
 export async function leerEquipos(archivo: File, catalogos: Catalogos): Promise<ResultadoLectura> {
   const [encabezados, ...filas] = await leerFilas(archivo);
@@ -84,8 +92,9 @@ export async function leerEquipos(archivo: File, catalogos: Catalogos): Promise<
     return { equipos: [], errores: [`Faltan columnas obligatorias: ${faltantes.join(", ")}.`] };
   }
   const celda = (fila: Celda[], col: string) => fila[indice.get(col.toLowerCase()) ?? -1];
+  const tiene = (col: string) => indice.has(col.toLowerCase());
 
-  const equipos: EquipoIn[] = [];
+  const equipos: EquipoLote[] = [];
   const errores: string[] = [];
   filas.forEach((fila, i) => {
     const n = i + 2; // número de fila en la hoja (1 = encabezados)
@@ -108,11 +117,7 @@ export async function leerEquipos(archivo: File, catalogos: Catalogos): Promise<
       errores.push(`Fila ${n} (${codigo}): valor no válido en ${problemas.join(", ")}.`);
       return;
     }
-    const comunicacion = aTexto(celda(fila, "tipoComunicacion")).toLowerCase().startsWith("fibra")
-      ? "Fibra óptica"
-      : "Celular";
-    const fechaRevision = aFecha(celda(fila, "fechaUltimaRevision"));
-    equipos.push({
+    const equipo: EquipoLote = {
       codigo,
       tipo: tipo!,
       marca: marca!,
@@ -121,19 +126,36 @@ export async function leerEquipos(archivo: File, catalogos: Catalogos): Promise<
       direccion: aTexto(celda(fila, "direccion")),
       lat: lat!,
       lng: lng!,
-      ip: aTexto(celda(fila, "ip")) || null,
-      tipo_comunicacion: comunicacion,
-      piloto: aTexto(celda(fila, "piloto")),
-      requiere_canasta: aBooleano(celda(fila, "requiereCanasta")),
-      zona_peligrosa: aBooleano(celda(fila, "zonaPeligrosa")),
-      fecha_ultima_revision: fechaRevision ? `${fechaRevision}T12:00:00Z` : null,
-      revision_count: aNumero(celda(fila, "revisionCount")) ?? 0,
-      proximo_mantenimiento_programado: aFecha(celda(fila, "proximoMantenimientoProgramado")),
-      intervalo_mantenimiento_dias: aNumero(celda(fila, "intervaloMantenimientoDias")),
-      intervalo_mantenimiento_revisiones: aNumero(celda(fila, "intervaloMantenimientoRevisiones")),
-      campos_adicionales: {},
       motivo_estado: "Importación masiva",
-    });
+    };
+    // Las columnas opcionales solo se envían si están en el archivo: al actualizar
+    // un equipo existente, lo que falte conserva su valor en vez de borrarse.
+    // (El contador y la fecha de revisión solo se usan al dar de alta equipos.)
+    if (tiene("ip")) equipo.ip = aTexto(celda(fila, "ip")) || null;
+    if (tiene("tipoComunicacion")) {
+      equipo.tipo_comunicacion = aTexto(celda(fila, "tipoComunicacion")).toLowerCase().startsWith("fibra")
+        ? "Fibra óptica"
+        : "Celular";
+    }
+    if (tiene("piloto")) equipo.piloto = aTexto(celda(fila, "piloto"));
+    if (tiene("requiereCanasta")) equipo.requiere_canasta = aBooleano(celda(fila, "requiereCanasta"));
+    if (tiene("zonaPeligrosa")) equipo.zona_peligrosa = aBooleano(celda(fila, "zonaPeligrosa"));
+    if (tiene("fechaFabricacion")) equipo.fecha_fabricacion = aFecha(celda(fila, "fechaFabricacion"));
+    if (tiene("fechaUltimaRevision")) {
+      const fecha = aFecha(celda(fila, "fechaUltimaRevision"));
+      equipo.fecha_ultima_revision = fecha ? `${fecha}T12:00:00Z` : null;
+    }
+    if (tiene("revisionCount")) equipo.revision_count = aNumero(celda(fila, "revisionCount")) ?? 0;
+    if (tiene("proximoMantenimientoProgramado")) {
+      equipo.proximo_mantenimiento_programado = aFecha(celda(fila, "proximoMantenimientoProgramado"));
+    }
+    if (tiene("intervaloMantenimientoDias")) {
+      equipo.intervalo_mantenimiento_dias = aNumero(celda(fila, "intervaloMantenimientoDias"));
+    }
+    if (tiene("intervaloMantenimientoRevisiones")) {
+      equipo.intervalo_mantenimiento_revisiones = aNumero(celda(fila, "intervaloMantenimientoRevisiones"));
+    }
+    equipos.push(equipo);
   });
   return { equipos, errores };
 }
@@ -165,6 +187,7 @@ export async function exportarEquipos(equipos: Equipo[], catalogos: Catalogos) {
     e.proximo_mantenimiento_programado ?? "",
     e.intervalo_mantenimiento_dias ?? "",
     e.intervalo_mantenimiento_revisiones ?? "",
+    e.fecha_fabricacion ?? "",
   ]);
   const datos = [
     COLUMNAS.map((c) => ({ value: c, fontWeight: "bold" as const })),

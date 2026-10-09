@@ -19,11 +19,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useSesion } from "@/hooks/use-sesion";
 import { api, unwrap } from "@/lib/api/client";
-import { useUsuarios } from "@/lib/api/hooks";
+import { useDirectorio } from "@/lib/api/hooks";
 
 export default function OrdenesPage() {
   const { tieneRol } = useSesion();
-  const tecnicos = useUsuarios({ rol: "tecnicoDeCampo" });
+  const tecnicos = useDirectorio({ rol: "tecnicoDeCampo" });
   const [estado, setEstado] = useState(TODOS);
   const [tecnico, setTecnico] = useState(TODOS);
   const [desde, setDesde] = useState("");

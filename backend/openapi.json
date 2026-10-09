@@ -178,6 +178,81 @@
         ]
       }
     },
+    "/api/accounts/directorio": {
+      "get": {
+        "operationId": "apps_accounts_api_directorio",
+        "summary": "Directorio",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rol",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Rol"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "activo",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Activo"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "default": "",
+              "title": "Q",
+              "type": "string"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioResumenOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Nombres, roles y habilidades de los usuarios, para cualquier usuario\nautenticado (asignar técnicos, mostrar quién hizo qué).",
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
     "/api/accounts/usuarios": {
       "get": {
         "operationId": "apps_accounts_api_listar_usuarios",
@@ -242,6 +317,7 @@
             }
           }
         },
+        "description": "Ficha completa (email, cédula...): solo con accounts.view_user (administrador).",
         "tags": [
           "usuarios"
         ],
@@ -1412,7 +1488,7 @@
             }
           }
         },
-        "description": "Crea o actualiza equipos por `codigo` (importación desde CSV/Excel).",
+        "description": "Crea o actualiza equipos por `codigo` (importación desde CSV/Excel).\n\nAl actualizar solo se aplican los campos enviados: lo que no venga en el\narchivo conserva su valor.",
         "tags": [
           "activos"
         ],
@@ -3616,33 +3692,15 @@
         "title": "MePatch",
         "type": "object"
       },
-      "UsuarioOut": {
+      "UsuarioResumenOut": {
+        "description": "Lo que cualquier usuario puede ver de los demás: sin datos personales.",
         "properties": {
           "id": {
             "title": "Id",
             "type": "integer"
           },
-          "email": {
-            "title": "Email",
-            "type": "string"
-          },
           "nombre": {
             "title": "Nombre",
-            "type": "string"
-          },
-          "cedula": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cedula"
-          },
-          "numero_rol": {
-            "title": "Numero Rol",
             "type": "string"
           },
           "foto_url": {
@@ -3677,14 +3735,84 @@
         },
         "required": [
           "id",
-          "email",
           "nombre",
-          "cedula",
-          "numero_rol",
           "foto_url",
           "estado",
           "perfiles",
           "habilidades"
+        ],
+        "title": "UsuarioResumenOut",
+        "type": "object"
+      },
+      "UsuarioOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          },
+          "foto_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Foto Url"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "perfiles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Perfiles",
+            "type": "array"
+          },
+          "habilidades": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Habilidades",
+            "type": "array"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "cedula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cedula"
+          },
+          "numero_rol": {
+            "title": "Numero Rol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nombre",
+          "foto_url",
+          "estado",
+          "perfiles",
+          "habilidades",
+          "email",
+          "cedula",
+          "numero_rol"
         ],
         "title": "UsuarioOut",
         "type": "object"
@@ -3731,27 +3859,8 @@
             "title": "Id",
             "type": "integer"
           },
-          "email": {
-            "title": "Email",
-            "type": "string"
-          },
           "nombre": {
             "title": "Nombre",
-            "type": "string"
-          },
-          "cedula": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cedula"
-          },
-          "numero_rol": {
-            "title": "Numero Rol",
             "type": "string"
           },
           "foto_url": {
@@ -3783,6 +3892,25 @@
             "title": "Habilidades",
             "type": "array"
           },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "cedula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cedula"
+          },
+          "numero_rol": {
+            "title": "Numero Rol",
+            "type": "string"
+          },
           "tiene_password": {
             "title": "Tiene Password",
             "type": "boolean"
@@ -3813,14 +3941,14 @@
         },
         "required": [
           "id",
-          "email",
           "nombre",
-          "cedula",
-          "numero_rol",
           "foto_url",
           "estado",
           "perfiles",
           "habilidades",
+          "email",
+          "cedula",
+          "numero_rol",
           "tiene_password",
           "debe_cambiar_password",
           "last_login",
@@ -5103,6 +5231,7 @@
             "title": "Ip"
           },
           "tipo_comunicacion": {
+            "default": "Celular",
             "title": "Tipo Comunicacion",
             "type": "string"
           },
@@ -5210,7 +5339,6 @@
           "direccion",
           "lat",
           "lng",
-          "tipo_comunicacion",
           "codigo"
         ],
         "title": "EquipoIn",
@@ -5966,6 +6094,20 @@
             },
             "title": "Trabajos",
             "type": "array"
+          },
+          "cedulas": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Cedulas",
+            "type": "object"
           }
         },
         "required": [
@@ -5977,7 +6119,8 @@
           "estado_general",
           "unidades",
           "trabajos_por_estado",
-          "trabajos"
+          "trabajos",
+          "cedulas"
         ],
         "title": "OrdenDetalleOut",
         "type": "object"
