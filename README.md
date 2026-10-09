@@ -3,10 +3,9 @@
 Gestión de operaciones de campo: solicitudes, órdenes de trabajo, equipos,
 vehículos, cuadrillas, planificación de rutas y reportes.
 
-> **Migración en curso.** La aplicación ya funciona sobre **Django +
-> PostgreSQL/PostGIS** sin Firebase, con mapas y rutas autoalojados. El
-> importador de datos está probado con la exportación real; falta la
-> importación en producción (fase 6).
+La aplicación funciona sobre **Django + PostgreSQL/PostGIS**, con mapas y rutas
+autoalojados, desplegada en Coolify. Los datos se migraron desde la versión
+anterior en Firebase, que queda solo como referencia en `legacy/firebase/`.
 
 ## Estructura del repositorio
 
@@ -261,7 +260,7 @@ Política de contraseñas:
   con `debe_cambiar_password`, que desaparece al cambiarla.
 - Reimportar no pisa contraseñas ya elegidas.
 
-## Plan de migración
+## Plan de migración (completado)
 
 - [x] **Fase 1: base.** Monorepo, proyecto Django, modelos en PostgreSQL/PostGIS,
       admin, autenticación (allauth headless), roles, Docker Compose, Caddy y CI.
@@ -274,4 +273,6 @@ Política de contraseñas:
 - [x] **Fase 5: reportes.** Agregaciones SQL en `/api/reportes`, gráficos con
       Recharts 3 y exportación a Excel; la OT se imprime o guarda como PDF desde
       el navegador.
-- [ ] **Fase 6: migración de datos** desde Firestore y puesta en producción.
+- [x] **Fase 6: migración de datos y puesta en producción.** Importación de
+      Firestore con `importar_datos` y despliegue en Coolify
+      (`compose.coolify.yaml`).
