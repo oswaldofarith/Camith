@@ -31,12 +31,11 @@ class EstadoHistorialOut(Schema):
     motivo: str
 
 
-class UsuarioOut(Schema):
+class UsuarioResumenOut(Schema):
+    """Lo que cualquier usuario puede ver de los demás: sin datos personales."""
+
     id: int
-    email: str
     nombre: str
-    cedula: str | None
-    numero_rol: str
     foto_url: str | None
     estado: str
     perfiles: list[str]
@@ -49,6 +48,12 @@ class UsuarioOut(Schema):
     @staticmethod
     def resolve_habilidades(obj):
         return [h.nombre for h in obj.habilidades.all()]
+
+
+class UsuarioOut(UsuarioResumenOut):
+    email: str
+    cedula: str | None
+    numero_rol: str
 
 
 class UsuarioDetalleOut(UsuarioOut):

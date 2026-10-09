@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api, unwrap } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
-import { useUsuarios } from "@/lib/api/hooks";
+import { useDirectorio } from "@/lib/api/hooks";
 
 type Plan = components["schemas"]["PlanRutasOut"];
 type Visita = Plan["rutas"][number]["visitas"][number];
@@ -42,7 +42,7 @@ export default function TableroPlanificacionPage() {
     queryFn: () => unwrap(api.GET("/api/vehiculos", { params: { query: { estado: "disponible" } } })),
   });
   const unidades = useQuery({ queryKey: ["unidades-campo"], queryFn: () => unwrap(api.GET("/api/unidades-campo")) });
-  const tecnicos = useUsuarios({ rol: "tecnicoDeCampo" });
+  const tecnicos = useDirectorio({ rol: "tecnicoDeCampo" });
 
   const composicion = useMemo(
     () => Object.fromEntries((unidades.data ?? []).map((u) => [u.vehiculo, u.tecnicos])),

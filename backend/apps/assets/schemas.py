@@ -45,7 +45,7 @@ class EquipoBase(Schema):
     lat: float = Field(ge=-90, le=90)
     lng: float = Field(ge=-180, le=180)
     ip: str | None = None
-    tipo_comunicacion: str
+    tipo_comunicacion: str = "Celular"
     piloto: str = ""
     fecha_fabricacion: date | None = None
     requiere_canasta: bool = False

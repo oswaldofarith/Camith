@@ -38,6 +38,7 @@ from apps.operations.models import (
     TrabajoFoto,
     UnidadDeCampo,
 )
+from apps.operations.services import recalcular_revisiones
 
 EMAIL_DESCONOCIDO = "desconocido@migracion.invalid"
 
@@ -261,6 +262,7 @@ class Importador:
         self.unidades_de_campo()
         self.solicitudes()
         self.ordenes()
+        self.revisiones()
         self.planes()
         self.notificaciones()
         self.fotos_de_perfil()
@@ -593,6 +595,14 @@ class Importador:
             if isinstance(url, str) and url.startswith("http"):
                 self.informe.fotos_pendientes.append(("trabajo", trabajo.pk, url))
         self.informe.creados["trabajos"] += 1
+
+    def revisiones(self):
+        """Firebase no mantenía revisionCount ni fechaUltimaRevision de los equipos:
+        se derivan de los trabajos completados (sin bajar los valores existentes)."""
+        if cambios := recalcular_revisiones():
+            self.informe.aviso(
+                f"Revisiones de {len(cambios)} equipos recalculadas desde sus trabajos completados."
+            )
 
     def planes(self):
         existentes = set(

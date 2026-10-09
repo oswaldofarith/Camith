@@ -84,6 +84,42 @@ def test_importacion_por_lote(como):
     assert Equipo.objects.get(codigo="EXISTE").direccion == "Nueva dirección"
 
 
+def test_lote_conserva_lo_que_no_viene_en_el_archivo(como):
+    """Reimportar una hoja sin algunas columnas no debe borrar esos datos."""
+    supervisor = como(Rol.SUPERVISOR)
+    supervisor.post(
+        "/api/equipos",
+        datos_equipo(
+            "EXISTE",
+            tipo_comunicacion="Fibra óptica",
+            piloto="P-7",
+            requiere_canasta=True,
+            fecha_fabricacion="2020-05-01",
+            campos_adicionales={"ubicacion_pendiente": True},
+        ),
+        content_type=JSON,
+    )
+    Equipo.objects.filter(codigo="EXISTE").update(revision_count=5)
+    # Solo las columnas obligatorias, más un contador viejo que no debe aplicarse.
+    fila = datos_equipo("EXISTE", direccion="Nueva dirección", revision_count=0)
+    del fila["tipo_comunicacion"]
+    resp = supervisor.post("/api/equipos/lote", [fila], content_type=JSON)
+    assert resp.json()["actualizados"] == 1, resp.content
+
+    e = Equipo.objects.get(codigo="EXISTE")
+    assert e.direccion == "Nueva dirección"
+    assert (e.tipo_comunicacion, e.piloto, e.requiere_canasta) == ("Fibra óptica", "P-7", True)
+    assert str(e.fecha_fabricacion) == "2020-05-01"
+    assert e.campos_adicionales == {"ubicacion_pendiente": True}
+    assert e.revision_count == 5  # lo mantienen los trabajos, no la hoja
+
+    # Un alta sin tipo de comunicación toma el valor por defecto.
+    fila = datos_equipo("NUEVO-2")
+    del fila["tipo_comunicacion"]
+    supervisor.post("/api/equipos/lote", [fila], content_type=JSON)
+    assert Equipo.objects.get(codigo="NUEVO-2").tipo_comunicacion == "Celular"
+
+
 def test_equipo_con_solicitudes_no_se_borra(como, crear_solicitud):
     solicitud = crear_solicitud()
     resp = como(Rol.SUPERVISOR).delete(f"/api/equipos/{solicitud.equipo.codigo}")

@@ -20,10 +20,11 @@ APPS_DEL_DOMINIO = ["accounts", "catalogs", "assets", "operations", "notificatio
 TODAS = ("view", "add", "change", "delete")
 
 # Todos los usuarios autenticados pueden consultar la información operativa.
+# Los datos personales de los usuarios (email, cédula, historial) no: solo el
+# administrador tiene accounts.view_user; el resto usa /accounts/directorio.
 _LECTURA_GENERAL = {
     f"{app}.{modelo}": ("view",)
     for app, modelo in [
-        ("accounts", "user"),
         ("accounts", "skill"),
         ("catalogs", "marca"),
         ("catalogs", "zona"),

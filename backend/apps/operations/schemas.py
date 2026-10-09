@@ -220,10 +220,18 @@ class OrdenOut(Schema):
 
 class OrdenDetalleOut(OrdenOut):
     trabajos: list[TrabajoOut]
+    # Cédula del creador y de los técnicos de esta orden, para la hoja impresa.
+    # El resto de usuarios no expone su cédula fuera de la gestión de usuarios.
+    cedulas: dict[int, str | None]
 
     @staticmethod
     def resolve_trabajos(obj):
         return list(obj.trabajos.all())
+
+    @staticmethod
+    def resolve_cedulas(obj):
+        tecnicos = [t for u in obj.unidades_asignadas.all() for t in u.tecnicos.all()]
+        return {p.pk: p.cedula for p in [obj.creado_por, *tecnicos]}
 
 
 class ReporteIn(Schema):

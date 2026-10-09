@@ -301,6 +301,8 @@ def test_importa_todo_conservando_identificadores(exportacion):
         "activo",
     )
     assert e1.revision_count == 4 and e1.requiere_canasta and e1.ip == "10.0.0.5"
+    # Derivada del trabajo completado a las 18:00, posterior a la de Firestore (15:00).
+    assert e1.fecha_ultima_revision.isoformat() == "2025-06-10T18:00:00+00:00"
     assert e1.estado_historial.count() == 1
     e2 = Equipo.objects.get(codigo="COL-002")
     assert e2.campos_adicionales == {"ubicacion_pendiente": True, "ip_original": "no-es-ip"}

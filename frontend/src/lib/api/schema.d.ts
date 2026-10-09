@@ -93,6 +93,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/accounts/directorio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Directorio
+         * @description Nombres, roles y habilidades de los usuarios, para cualquier usuario
+         *     autenticado (asignar técnicos, mostrar quién hizo qué).
+         */
+        get: operations["apps_accounts_api_directorio"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/accounts/usuarios": {
         parameters: {
             query?: never;
@@ -100,7 +121,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Listar Usuarios */
+        /**
+         * Listar Usuarios
+         * @description Ficha completa (email, cédula...): solo con accounts.view_user (administrador).
+         */
         get: operations["apps_accounts_api_listar_usuarios"];
         put?: never;
         /** Crear Usuario */
@@ -401,6 +425,9 @@ export interface paths {
         /**
          * Importar Equipos
          * @description Crea o actualiza equipos por `codigo` (importación desde CSV/Excel).
+         *
+         *     Al actualizar solo se aplican los campos enviados: lo que no venga en el
+         *     archivo conserva su valor.
          */
         post: operations["apps_assets_api_importar_equipos"];
         delete?: never;
@@ -1044,18 +1071,15 @@ export interface components {
             /** Nombre */
             nombre: string;
         };
-        /** UsuarioOut */
-        UsuarioOut: {
+        /**
+         * UsuarioResumenOut
+         * @description Lo que cualquier usuario puede ver de los demás: sin datos personales.
+         */
+        UsuarioResumenOut: {
             /** Id */
             id: number;
-            /** Email */
-            email: string;
             /** Nombre */
             nombre: string;
-            /** Cedula */
-            cedula: string | null;
-            /** Numero Rol */
-            numero_rol: string;
             /** Foto Url */
             foto_url: string | null;
             /** Estado */
@@ -1064,6 +1088,27 @@ export interface components {
             perfiles: string[];
             /** Habilidades */
             habilidades: string[];
+        };
+        /** UsuarioOut */
+        UsuarioOut: {
+            /** Id */
+            id: number;
+            /** Nombre */
+            nombre: string;
+            /** Foto Url */
+            foto_url: string | null;
+            /** Estado */
+            estado: string;
+            /** Perfiles */
+            perfiles: string[];
+            /** Habilidades */
+            habilidades: string[];
+            /** Email */
+            email: string;
+            /** Cedula */
+            cedula: string | null;
+            /** Numero Rol */
+            numero_rol: string;
         };
         /** EstadoHistorialOut */
         EstadoHistorialOut: {
@@ -1083,14 +1128,8 @@ export interface components {
         UsuarioDetalleOut: {
             /** Id */
             id: number;
-            /** Email */
-            email: string;
             /** Nombre */
             nombre: string;
-            /** Cedula */
-            cedula: string | null;
-            /** Numero Rol */
-            numero_rol: string;
             /** Foto Url */
             foto_url: string | null;
             /** Estado */
@@ -1099,6 +1138,12 @@ export interface components {
             perfiles: string[];
             /** Habilidades */
             habilidades: string[];
+            /** Email */
+            email: string;
+            /** Cedula */
+            cedula: string | null;
+            /** Numero Rol */
+            numero_rol: string;
             /** Tiene Password */
             tiene_password: boolean;
             /** Debe Cambiar Password */
@@ -1541,7 +1586,10 @@ export interface components {
             lng: number;
             /** Ip */
             ip?: string | null;
-            /** Tipo Comunicacion */
+            /**
+             * Tipo Comunicacion
+             * @default Celular
+             */
             tipo_comunicacion: string;
             /**
              * Piloto
@@ -1845,6 +1893,10 @@ export interface components {
             };
             /** Trabajos */
             trabajos: components["schemas"]["TrabajoOut"][];
+            /** Cedulas */
+            cedulas: {
+                [key: string]: string | null;
+            };
         };
         /** TrabajoOut */
         TrabajoOut: {
@@ -2578,6 +2630,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": string[];
+                };
+            };
+        };
+    };
+    apps_accounts_api_directorio: {
+        parameters: {
+            query?: {
+                rol?: string | null;
+                activo?: boolean | null;
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioResumenOut"][];
                 };
             };
         };

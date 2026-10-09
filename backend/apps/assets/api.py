@@ -144,23 +144,34 @@ def mapa_equipos(request, estado: str | None = None):
     }
 
 
+# Al actualizar por lote no se tocan: los mantiene el sistema (cada trabajo
+# completado suma una revisión) y una hoja exportada hace tiempo los devolvería
+# a un valor viejo. Solo se usan al dar de alta equipos con historial previo.
+SOLO_EN_ALTA = ("codigo", "revision_count", "fecha_ultima_revision")
+
+
 # Debe declararse antes de /equipos/{codigo}: esa ruta captura cualquier texto.
 @router.post("/equipos/lote", response=ResultadoLote)
 def importar_equipos(request, payload: list[EquipoIn]):
-    """Crea o actualiza equipos por `codigo` (importación desde CSV/Excel)."""
+    """Crea o actualiza equipos por `codigo` (importación desde CSV/Excel).
+
+    Al actualizar solo se aplican los campos enviados: lo que no venga en el
+    archivo conserva su valor."""
     exigir_permiso(request, "assets.add_equipo", "assets.change_equipo")
     creados = actualizados = 0
     errores = []
     for item in payload:
-        datos = item.dict()
         try:
             with transaction.atomic():
                 existente = Equipo.objects.filter(codigo=item.codigo).first()
                 if existente:
+                    datos = item.dict(exclude_unset=True)
+                    for campo in SOLO_EN_ALTA:
+                        datos.pop(campo, None)
                     services.actualizar_equipo(existente, datos, request.user)
                     actualizados += 1
                 else:
-                    services.crear_equipo(datos, request.user)
+                    services.crear_equipo(item.dict(), request.user)
                     creados += 1
         except ValidationError as e:
             errores.append({"codigo": item.codigo, "error": "; ".join(e.messages)})

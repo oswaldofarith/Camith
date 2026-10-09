@@ -10,35 +10,35 @@ import { Cargando, ErrorCarga } from "@/components/common/Estado";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { api, unwrap } from "@/lib/api/client";
-import { useCatalogos, useUsuarios } from "@/lib/api/hooks";
+import { useCatalogos } from "@/lib/api/hooks";
 
 /** Hoja de la orden de trabajo para imprimir o guardar como PDF desde el navegador. */
 export default function ImprimirOrdenPage({ params }: { params: Promise<{ id: string }> }) {
   const id = Number(use(params).id);
   const catalogos = useCatalogos();
-  const usuarios = useUsuarios();
   const [qr, setQr] = useState<string | null>(null);
   const orden = useQuery({
     queryKey: ["ordenes", "detalle", id],
     queryFn: () => unwrap(api.GET("/api/ordenes/{orden_id}", { params: { path: { orden_id: id } } })),
   });
 
-  const usuario = (uid: number) => usuarios.data?.find((u) => u.id === uid);
+  // La orden trae solo las cédulas de su creador y sus técnicos.
+  const cedula = (uid: number) => orden.data?.cedulas[uid] ?? null;
 
   useEffect(() => {
-    if (!orden.data || !usuarios.data) return;
+    if (!orden.data) return;
     const o = orden.data;
     // Mismos datos que el QR de la versión anterior, para verificar la hoja en campo.
     const datos = {
       ordenId: o.display_id,
       fechaCreacion: o.fecha_creacion,
-      creadorCI: usuarios.data.find((u) => u.id === o.creado_por_id)?.cedula ?? "N/A",
+      creadorCI: o.cedulas[o.creado_por_id] ?? "N/A",
       placasVehiculos: o.unidades.map((u) => u.placa),
-      cedulasTecnicos: o.unidades.flatMap((u) => u.tecnicos.map((t) => usuarios.data.find((x) => x.id === t.id)?.cedula ?? "N/A")),
+      cedulasTecnicos: o.unidades.flatMap((u) => u.tecnicos.map((t) => o.cedulas[t.id] ?? "N/A")),
       coordenadasRevisiones: o.trabajos.map((t) => `${t.equipo.lat.toFixed(6)},${t.equipo.lng.toFixed(6)}`),
     };
     QRCode.toDataURL(JSON.stringify(datos), { errorCorrectionLevel: "M", margin: 1 }).then(setQr, () => setQr(null));
-  }, [orden.data, usuarios.data]);
+  }, [orden.data]);
 
   if (orden.isPending) return <Cargando />;
   if (orden.isError) return <ErrorCarga error={orden.error} />;
@@ -82,7 +82,7 @@ export default function ImprimirOrdenPage({ params }: { params: Promise<{ id: st
                 <tr key={`${u.vehiculo}-${t.id}`}>
                   <td className="border p-1">{i === 0 ? u.placa : ""}</td>
                   <td className="border p-1">{t.nombre}</td>
-                  <td className="border p-1">{usuario(t.id)?.cedula ?? "—"}</td>
+                  <td className="border p-1">{cedula(t.id) ?? "—"}</td>
                 </tr>
               )),
             )}

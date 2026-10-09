@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api, unwrap } from "@/lib/api/client";
-import { useUsuarios } from "@/lib/api/hooks";
+import { useDirectorio } from "@/lib/api/hooks";
 import type { Solicitud } from "@/lib/api/types";
 
 export default function CrearOrdenPage() {
@@ -40,7 +40,7 @@ export default function CrearOrdenPage() {
     queryFn: () => unwrap(api.GET("/api/vehiculos", { params: { query: { estado: "disponible" } } })),
   });
   const unidades = useQuery({ queryKey: ["unidades-campo"], queryFn: () => unwrap(api.GET("/api/unidades-campo")) });
-  const tecnicos = useUsuarios({ rol: "tecnicoDeCampo", activo: true });
+  const tecnicos = useDirectorio({ rol: "tecnicoDeCampo", activo: true });
 
   // Técnicos: los elegidos a mano o, si no, la composición habitual del vehículo.
   const tecnicosRuta = tecnicosElegidos ?? unidades.data?.find((u) => u.vehiculo === vehiculo)?.tecnicos ?? [];

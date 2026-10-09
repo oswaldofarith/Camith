@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { api, unwrap } from "@/lib/api/client";
 import { useCatalogos } from "@/lib/api/hooks";
-import { descargarPlantilla, leerEquipos } from "@/lib/equipos-excel";
+import { descargarPlantilla, type EquipoIn, leerEquipos } from "@/lib/equipos-excel";
 
 const TAMANO_LOTE = 200;
 
@@ -33,7 +33,9 @@ export function DialogoImportar({ abierto, onCambiar }: { abierto: boolean; onCa
       let actualizados = 0;
       // Por lotes: el servidor valida cada equipo y devuelve los errores por código.
       for (let i = 0; i < equipos.length; i += TAMANO_LOTE) {
-        const r = await unwrap(api.POST("/api/equipos/lote", { body: equipos.slice(i, i + TAMANO_LOTE) }));
+        // EquipoLote → EquipoIn: los campos que faltan tienen valor por defecto en la API.
+        const lote = equipos.slice(i, i + TAMANO_LOTE) as EquipoIn[];
+        const r = await unwrap(api.POST("/api/equipos/lote", { body: lote }));
         creados += r.creados;
         actualizados += r.actualizados;
         errores.push(...r.errores.map((e) => `${e.codigo}: ${e.error}`));
@@ -64,8 +66,9 @@ export function DialogoImportar({ abierto, onCambiar }: { abierto: boolean; onCa
         <DialogHeader>
           <DialogTitle>Importar equipos</DialogTitle>
           <DialogDescription>
-            Archivo CSV o Excel con la columna <code>identificacion</code>. Los equipos existentes se
-            actualizan; los nuevos se crean.
+            Archivo CSV o Excel con la columna <code>identificacion</code>. Los equipos nuevos se crean;
+            en los existentes solo cambian las columnas que trae el archivo (las revisiones las lleva el
+            sistema).
           </DialogDescription>
         </DialogHeader>
         <Button variant="link" className="h-auto justify-start p-0" onClick={() => descargarPlantilla()}>

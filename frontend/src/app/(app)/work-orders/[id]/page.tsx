@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSesion } from "@/hooks/use-sesion";
 import { api, unwrap } from "@/lib/api/client";
-import { useCatalogos, useUsuarios } from "@/lib/api/hooks";
+import { useCatalogos, useDirectorio } from "@/lib/api/hooks";
 import type { Trabajo } from "@/lib/api/types";
 
 const fechaHora = (v?: string | null) => (v ? format(new Date(v), "dd/MM/yyyy HH:mm") : "—");
@@ -40,7 +40,7 @@ export default function OrdenPage({ params }: { params: Promise<{ id: string }> 
   const queryClient = useQueryClient();
   const { tieneRol } = useSesion();
   const catalogos = useCatalogos();
-  const usuarios = useUsuarios();
+  const usuarios = useDirectorio();
   const [revisando, setRevisando] = useState<Trabajo | null>(null);
   const [cancelando, setCancelando] = useState<Trabajo | null>(null);
   const [borrando, setBorrando] = useState(false);
