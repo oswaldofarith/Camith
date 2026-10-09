@@ -70,5 +70,10 @@ rm -rf "$TMP"
 echo
 echo "Listo. Tamaños:"
 du -sh "$OSRM" "$PUBLICO/guayaquil.pmtiles" "$PUBLICO/assets"
-echo "Arranca el motor de rutas con: docker compose --profile mapas up -d"
-echo "(en Coolify: reinicia los servicios osrm y web)"
+if [ -n "${DATOS:-}" ]; then
+  # Coolify: el stack ya está desplegado; no usar docker compose aquí.
+  echo "Reinicia el servicio osrm de la aplicación en Coolify (Restart) para que cargue las rutas."
+  echo "El mapa base no necesita reinicio: recarga la página."
+else
+  echo "Arranca el motor de rutas con: docker compose --profile mapas up -d"
+fi
