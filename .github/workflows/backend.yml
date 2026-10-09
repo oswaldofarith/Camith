@@ -1,0 +1,41 @@
+name: Backend
+
+on:
+  push:
+    paths: ["backend/**", ".github/workflows/backend.yml"]
+  pull_request:
+    paths: ["backend/**", ".github/workflows/backend.yml"]
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      db:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_DB: camith
+          POSTGRES_USER: camith
+          POSTGRES_PASSWORD: camith
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U camith"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DJANGO_DEBUG: "1"
+      DJANGO_SECRET_KEY: ci-only
+      DATABASE_URL: postgis://camith:camith@localhost:5432/camith
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar GDAL/GEOS
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gdal-bin
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run python manage.py makemigrations --check --dry-run
+      - run: uv run pytest --create-db

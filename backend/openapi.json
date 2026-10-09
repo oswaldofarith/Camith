@@ -1,0 +1,7597 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AMI-FieldWorkManager API",
+    "version": "1.0.0",
+    "description": ""
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "apps_core_api_health",
+        "summary": "Health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "sistema"
+        ]
+      }
+    },
+    "/api/csrf": {
+      "get": {
+        "operationId": "apps_core_api_csrf",
+        "summary": "Csrf",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Fija la cookie `csrftoken` para que el frontend pueda enviar X-CSRFToken.",
+        "tags": [
+          "sistema"
+        ]
+      }
+    },
+    "/api/accounts/me": {
+      "get": {
+        "operationId": "apps_accounts_api_me",
+        "summary": "Me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "apps_accounts_api_editar_me",
+        "summary": "Editar Me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MePatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/accounts/me/foto": {
+      "post": {
+        "operationId": "apps_accounts_api_subir_foto",
+        "summary": "Subir Foto",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "foto": {
+                    "format": "binary",
+                    "title": "Foto",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "foto"
+                ],
+                "title": "FileParams",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/accounts/skills": {
+      "get": {
+        "operationId": "apps_accounts_api_habilidades",
+        "summary": "Habilidades",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/accounts/usuarios": {
+      "get": {
+        "operationId": "apps_accounts_api_listar_usuarios",
+        "summary": "Listar Usuarios",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rol",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Rol"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "activo",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Activo"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "default": "",
+              "title": "Q",
+              "type": "string"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "apps_accounts_api_crear_usuario",
+        "summary": "Crear Usuario",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioDetalleOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/accounts/usuarios/{user_id}": {
+      "get": {
+        "operationId": "apps_accounts_api_obtener_usuario",
+        "summary": "Obtener Usuario",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioDetalleOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "apps_accounts_api_editar_usuario",
+        "summary": "Editar Usuario",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioDetalleOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/accounts/usuarios/{user_id}/estado": {
+      "post": {
+        "operationId": "apps_accounts_api_cambiar_estado",
+        "summary": "Cambiar Estado",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioDetalleOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "usuarios"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EstadoIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/accounts/usuarios/{user_id}/password-temporal": {
+      "post": {
+        "operationId": "apps_accounts_api_asignar_password_temporal",
+        "summary": "Asignar Password Temporal",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioDetalleOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "El administrador fija una contraseña que el usuario deberá cambiar al entrar.",
+        "tags": [
+          "usuarios"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordTemporalIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/catalogos": {
+      "get": {
+        "operationId": "apps_catalogs_api_todos",
+        "summary": "Todos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogosOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Todos los catálogos y la configuración en una sola respuesta.",
+        "tags": [
+          "catálogos"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/catalogos/configuracion": {
+      "put": {
+        "operationId": "apps_catalogs_api_guardar_configuracion",
+        "summary": "Guardar Configuracion",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfiguracionSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "catálogos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfiguracionSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/catalogos/tipos-trabajo": {
+      "post": {
+        "operationId": "apps_catalogs_api_crear_tipo_trabajo",
+        "summary": "Crear Tipo Trabajo",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoTrabajoOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "catálogos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TipoTrabajoIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/catalogos/tipos-trabajo/{tipo_id}": {
+      "patch": {
+        "operationId": "apps_catalogs_api_editar_tipo_trabajo",
+        "summary": "Editar Tipo Trabajo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tipo_id",
+            "schema": {
+              "title": "Tipo Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoTrabajoOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "catálogos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TipoTrabajoPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_catalogs_api_borrar_tipo_trabajo",
+        "summary": "Borrar Tipo Trabajo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tipo_id",
+            "schema": {
+              "title": "Tipo Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "catálogos"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/catalogos/localidades": {
+      "post": {
+        "operationId": "apps_catalogs_api_crear_localidad",
+        "summary": "Crear Localidad",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocalidadOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "catálogos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalidadIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/catalogos/localidades/{localidad_id}": {
+      "put": {
+        "operationId": "apps_catalogs_api_editar_localidad",
+        "summary": "Editar Localidad",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "localidad_id",
+            "schema": {
+              "title": "Localidad Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocalidadOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "catálogos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalidadIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_catalogs_api_borrar_localidad",
+        "summary": "Borrar Localidad",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "localidad_id",
+            "schema": {
+              "title": "Localidad Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "catálogos"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/catalogos/{catalogo}": {
+      "post": {
+        "operationId": "apps_catalogs_api_crear_item",
+        "summary": "Crear Item",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "catalogo",
+            "schema": {
+              "enum": [
+                "marcas",
+                "zonas",
+                "tipos-equipo",
+                "estados-equipo",
+                "tipos-vehiculo",
+                "estados-vehiculo",
+                "urgencias",
+                "respuestas-predefinidas"
+              ],
+              "title": "Catalogo",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "catálogos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ItemIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/catalogos/{catalogo}/{valor}": {
+      "patch": {
+        "operationId": "apps_catalogs_api_editar_item",
+        "summary": "Editar Item",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "catalogo",
+            "schema": {
+              "enum": [
+                "marcas",
+                "zonas",
+                "tipos-equipo",
+                "estados-equipo",
+                "tipos-vehiculo",
+                "estados-vehiculo",
+                "urgencias",
+                "respuestas-predefinidas"
+              ],
+              "title": "Catalogo",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "valor",
+            "schema": {
+              "title": "Valor",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "catálogos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ItemPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_catalogs_api_borrar_item",
+        "summary": "Borrar Item",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "catalogo",
+            "schema": {
+              "enum": [
+                "marcas",
+                "zonas",
+                "tipos-equipo",
+                "estados-equipo",
+                "tipos-vehiculo",
+                "estados-vehiculo",
+                "urgencias",
+                "respuestas-predefinidas"
+              ],
+              "title": "Catalogo",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "valor",
+            "schema": {
+              "title": "Valor",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "description": "Falla con 409 si el valor está en uso; en ese caso, desactívelo.",
+        "tags": [
+          "catálogos"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehiculos": {
+      "get": {
+        "operationId": "apps_assets_api_listar_vehiculos",
+        "summary": "Listar Vehiculos",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "estado",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Estado"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "tipo",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tipo"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/VehiculoOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "activos"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "apps_assets_api_crear_vehiculo",
+        "summary": "Crear Vehiculo",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehiculoOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "activos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VehiculoIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/vehiculos/{codigo}": {
+      "get": {
+        "operationId": "apps_assets_api_obtener_vehiculo",
+        "summary": "Obtener Vehiculo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "codigo",
+            "schema": {
+              "title": "Codigo",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehiculoOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "activos"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "apps_assets_api_editar_vehiculo",
+        "summary": "Editar Vehiculo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "codigo",
+            "schema": {
+              "title": "Codigo",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehiculoOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "activos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VehiculoPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_assets_api_borrar_vehiculo",
+        "summary": "Borrar Vehiculo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "codigo",
+            "schema": {
+              "title": "Codigo",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "activos"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/equipos": {
+      "get": {
+        "operationId": "apps_assets_api_listar_equipos",
+        "summary": "Listar Equipos",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tipo",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tipo"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "marca",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Marca"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "zona",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Zona"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "estado",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Estado"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "default": "",
+              "title": "Q",
+              "type": "string"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "cerca_lat",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cerca Lat"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "cerca_lng",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cerca Lng"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "radio_m",
+            "schema": {
+              "default": 1000,
+              "title": "Radio M",
+              "type": "number"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "bbox",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Bbox"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedEquipoOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Filtros opcionales. `cerca_*` ordena por distancia; `bbox` = oeste,sur,este,norte.",
+        "tags": [
+          "activos"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "apps_assets_api_crear_equipo",
+        "summary": "Crear Equipo",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipoDetalleOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "activos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EquipoIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/equipos/mapa": {
+      "get": {
+        "operationId": "apps_assets_api_mapa_equipos",
+        "summary": "Mapa Equipos",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "estado",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Estado"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "GeoJSON ligero de todos los equipos para pintarlos en MapLibre.",
+        "tags": [
+          "activos"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/equipos/lote": {
+      "post": {
+        "operationId": "apps_assets_api_importar_equipos",
+        "summary": "Importar Equipos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultadoLote"
+                }
+              }
+            }
+          }
+        },
+        "description": "Crea o actualiza equipos por `codigo` (importación desde CSV/Excel).",
+        "tags": [
+          "activos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/EquipoIn"
+                },
+                "title": "Payload",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/equipos/{codigo}": {
+      "get": {
+        "operationId": "apps_assets_api_obtener_equipo",
+        "summary": "Obtener Equipo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "codigo",
+            "schema": {
+              "title": "Codigo",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipoDetalleOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "activos"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "apps_assets_api_editar_equipo",
+        "summary": "Editar Equipo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "codigo",
+            "schema": {
+              "title": "Codigo",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipoDetalleOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "activos"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EquipoPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_assets_api_borrar_equipo",
+        "summary": "Borrar Equipo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "codigo",
+            "schema": {
+              "title": "Codigo",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "description": "Falla con 409 si el equipo tiene solicitudes; en ese caso, darlo de baja.",
+        "tags": [
+          "activos"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/solicitudes": {
+      "get": {
+        "operationId": "apps_operations_api_listar_solicitudes",
+        "summary": "Listar Solicitudes",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "estado",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Estado",
+              "type": "array"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "equipo",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Equipo"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "urgencia",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Urgencia"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Desde"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Hasta"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "mias",
+            "schema": {
+              "default": false,
+              "title": "Mias",
+              "type": "boolean"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedSolicitudOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "`desde`/`hasta` filtran por fecha programada; `mias` por creador.",
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "apps_operations_api_crear_solicitud",
+        "summary": "Crear Solicitud",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitudOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/solicitudes/{solicitud_id}": {
+      "get": {
+        "operationId": "apps_operations_api_obtener_solicitud",
+        "summary": "Obtener Solicitud",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "solicitud_id",
+            "schema": {
+              "title": "Solicitud Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitudOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "apps_operations_api_editar_solicitud",
+        "summary": "Editar Solicitud",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "solicitud_id",
+            "schema": {
+              "title": "Solicitud Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitudOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_operations_api_borrar_solicitud",
+        "summary": "Borrar Solicitud",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "solicitud_id",
+            "schema": {
+              "title": "Solicitud Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "description": "Falla con 409 si la solicitud ya forma parte de una orden de trabajo.",
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/solicitudes/{solicitud_id}/cancelar": {
+      "post": {
+        "operationId": "apps_operations_api_cancelar_solicitud",
+        "summary": "Cancelar Solicitud",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "solicitud_id",
+            "schema": {
+              "title": "Solicitud Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitudOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MotivoIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/unidades-campo": {
+      "get": {
+        "operationId": "apps_operations_api_listar_unidades",
+        "summary": "Listar Unidades",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UnidadCampoSchema"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "apps_operations_api_guardar_unidades",
+        "summary": "Guardar Unidades",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UnidadCampoSchema"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Reemplaza todas las composiciones por defecto de las cuadrillas.",
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/UnidadCampoSchema"
+                },
+                "title": "Payload",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/ordenes": {
+      "get": {
+        "operationId": "apps_operations_api_listar_ordenes",
+        "summary": "Listar Ordenes",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "estado",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Estado",
+              "type": "array"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Desde"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Hasta"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "tecnico",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tecnico"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedOrdenOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "`desde`/`hasta` filtran por fecha de creación; `tecnico` por técnico asignado.",
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "apps_operations_api_crear_ordenes",
+        "summary": "Crear Ordenes",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OrdenDetalleOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Crea una o varias OT (p. ej., todas las rutas del tablero de planificación).",
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/OrdenIn"
+                },
+                "title": "Payload",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/ordenes/{orden_id}": {
+      "get": {
+        "operationId": "apps_operations_api_obtener_orden",
+        "summary": "Obtener Orden",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orden_id",
+            "schema": {
+              "title": "Orden Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdenDetalleOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_operations_api_borrar_orden",
+        "summary": "Borrar Orden",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orden_id",
+            "schema": {
+              "title": "Orden Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/trabajos": {
+      "get": {
+        "operationId": "apps_operations_api_listar_trabajos",
+        "summary": "Listar Trabajos",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "equipo",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Equipo"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "estado",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Estado",
+              "type": "array"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "tecnico",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tecnico"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Desde"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Hasta"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedTrabajoOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Historial de trabajos. `desde`/`hasta` filtran por fecha de la orden.",
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/trabajos/mios": {
+      "get": {
+        "operationId": "apps_operations_api_mis_trabajos",
+        "summary": "Mis Trabajos",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "estado",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Estado",
+              "type": "array"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Desde"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Hasta"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TrabajoOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Trabajos de las órdenes donde el usuario es técnico asignado.",
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/trabajos/{trabajo_id}": {
+      "get": {
+        "operationId": "apps_operations_api_obtener_trabajo",
+        "summary": "Obtener Trabajo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "trabajo_id",
+            "schema": {
+              "title": "Trabajo Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrabajoOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/trabajos/{trabajo_id}/reportar": {
+      "post": {
+        "operationId": "apps_operations_api_reportar_trabajo",
+        "summary": "Reportar Trabajo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "trabajo_id",
+            "schema": {
+              "title": "Trabajo Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrabajoOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "El técnico asignado (o un supervisor) marca el trabajo como completado o no.",
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReporteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/trabajos/{trabajo_id}/revisar": {
+      "post": {
+        "operationId": "apps_operations_api_revisar_trabajo",
+        "summary": "Revisar Trabajo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "trabajo_id",
+            "schema": {
+              "title": "Trabajo Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrabajoOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Ingeniero, supervisor o administrador: cambia el estado u observa el trabajo.",
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/trabajos/{trabajo_id}/cancelar": {
+      "post": {
+        "operationId": "apps_operations_api_cancelar_trabajo",
+        "summary": "Cancelar Trabajo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "trabajo_id",
+            "schema": {
+              "title": "Trabajo Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrabajoOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MotivoIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/trabajos/{trabajo_id}/fotos": {
+      "post": {
+        "operationId": "apps_operations_api_subir_fotos",
+        "summary": "Subir Fotos",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "trabajo_id",
+            "schema": {
+              "title": "Trabajo Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FotoOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "fotos": {
+                    "items": {
+                      "format": "binary",
+                      "type": "string"
+                    },
+                    "title": "Fotos",
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "fotos"
+                ],
+                "title": "FileParams",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/trabajos/{trabajo_id}/fotos/{foto_id}": {
+      "delete": {
+        "operationId": "apps_operations_api_borrar_foto",
+        "summary": "Borrar Foto",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "trabajo_id",
+            "schema": {
+              "title": "Trabajo Id",
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "foto_id",
+            "schema": {
+              "title": "Foto Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/planes-mantenimiento": {
+      "get": {
+        "operationId": "apps_operations_api_listar_planes",
+        "summary": "Listar Planes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlanOut"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "apps_operations_api_crear_plan",
+        "summary": "Crear Plan",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDetalleOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/planes-mantenimiento/{plan_id}": {
+      "get": {
+        "operationId": "apps_operations_api_obtener_plan",
+        "summary": "Obtener Plan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "schema": {
+              "title": "Plan Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDetalleOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "apps_operations_api_editar_plan",
+        "summary": "Editar Plan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "schema": {
+              "title": "Plan Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDetalleOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "apps_operations_api_borrar_plan",
+        "summary": "Borrar Plan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "schema": {
+              "title": "Plan Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/planes-mantenimiento/previsualizar": {
+      "post": {
+        "operationId": "apps_operations_api_previsualizar_plan",
+        "summary": "Previsualizar Plan",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrevisualizacionOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Calcula el calendario sin guardarlo.",
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerarPlanIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/planes-mantenimiento/generar": {
+      "post": {
+        "operationId": "apps_operations_api_generar_plan",
+        "summary": "Generar Plan",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDetalleOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Calcula el calendario con reglas fijas y guarda el plan como activo.",
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerarPlanIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/planes-mantenimiento/{plan_id}/generar-solicitudes": {
+      "post": {
+        "operationId": "apps_operations_api_generar_solicitudes",
+        "summary": "Generar Solicitudes",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "schema": {
+              "title": "Plan Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerarSolicitudesOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerarSolicitudesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/dashboard/kpis": {
+      "get": {
+        "operationId": "apps_operations_api_kpis",
+        "summary": "Kpis",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KpisOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/dashboard/tendencias": {
+      "get": {
+        "operationId": "apps_operations_api_tendencias",
+        "summary": "Tendencias",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "dias",
+            "schema": {
+              "default": 14,
+              "title": "Dias",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TendenciaDia"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "description": "Órdenes creadas y sus trabajos por estado, por día de creación de la orden.",
+        "tags": [
+          "operaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/notificaciones": {
+      "get": {
+        "operationId": "apps_notifications_api_listar",
+        "summary": "Listar",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "no_leidas",
+            "schema": {
+              "default": false,
+              "title": "No Leidas",
+              "type": "boolean"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Size"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedNotificacionOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "notificaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/notificaciones/conteo": {
+      "get": {
+        "operationId": "apps_notifications_api_conteo",
+        "summary": "Conteo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConteoOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "notificaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/notificaciones/{notificacion_id}/leer": {
+      "post": {
+        "operationId": "apps_notifications_api_marcar_leida",
+        "summary": "Marcar Leida",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "notificacion_id",
+            "schema": {
+              "title": "Notificacion Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificacionOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "notificaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/notificaciones/leer-todas": {
+      "post": {
+        "operationId": "apps_notifications_api_marcar_todas",
+        "summary": "Marcar Todas",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarcadasOut"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "notificaciones"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reportes/solicitudes-mensual": {
+      "get": {
+        "operationId": "apps_operations_api_reportes_solicitudes_mensual",
+        "summary": "Solicitudes Mensual",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "format": "date",
+              "title": "Desde",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "format": "date",
+              "title": "Hasta",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SolicitudesMes"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reportes"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reportes/productividad-mensual": {
+      "get": {
+        "operationId": "apps_operations_api_reportes_productividad_mensual",
+        "summary": "Productividad Mensual",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "format": "date",
+              "title": "Desde",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "format": "date",
+              "title": "Hasta",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Productividad"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reportes"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reportes/ranking-equipos": {
+      "get": {
+        "operationId": "apps_operations_api_reportes_ranking_equipos",
+        "summary": "Ranking Equipos",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "format": "date",
+              "title": "Desde",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "format": "date",
+              "title": "Hasta",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "tipo_equipo",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Tipo Equipo",
+              "type": "array"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "schema": {
+              "default": 100,
+              "title": "Limite",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ranking"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reportes"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reportes/tecnicos": {
+      "get": {
+        "operationId": "apps_operations_api_reportes_estadisticas_tecnicos",
+        "summary": "Estadisticas Tecnicos",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "format": "date",
+              "title": "Desde",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "format": "date",
+              "title": "Hasta",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstadisticasTecnicos"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reportes"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/planificacion/optimizar": {
+      "post": {
+        "operationId": "apps_routing_api_optimizar",
+        "summary": "Optimizar",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanRutasOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Propone rutas para las solicitudes pendientes. No crea nada: el supervisor\nrevisa la propuesta y la confirma creando las órdenes (POST /api/ordenes).",
+        "tags": [
+          "planificación"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OptimizarIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/planificacion/rutas-del-dia": {
+      "get": {
+        "operationId": "apps_routing_api_rutas_del_dia",
+        "summary": "Rutas Del Dia",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "fecha",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Fecha"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RutasDelDiaOut"
+                }
+              }
+            }
+          }
+        },
+        "description": "Órdenes del día (o con trabajos aún pendientes) con su trazado, para el mapa.",
+        "tags": [
+          "planificación"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MeOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          },
+          "cedula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cedula"
+          },
+          "numero_rol": {
+            "title": "Numero Rol",
+            "type": "string"
+          },
+          "foto_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Foto Url"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "perfiles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Perfiles",
+            "type": "array"
+          },
+          "habilidades": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Habilidades",
+            "type": "array"
+          },
+          "is_staff": {
+            "title": "Is Staff",
+            "type": "boolean"
+          },
+          "debe_cambiar_password": {
+            "title": "Debe Cambiar Password",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "nombre",
+          "cedula",
+          "numero_rol",
+          "foto_url",
+          "estado",
+          "perfiles",
+          "habilidades",
+          "is_staff",
+          "debe_cambiar_password"
+        ],
+        "title": "MeOut",
+        "type": "object"
+      },
+      "MePatch": {
+        "properties": {
+          "nombre": {
+            "maxLength": 150,
+            "minLength": 1,
+            "title": "Nombre",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nombre"
+        ],
+        "title": "MePatch",
+        "type": "object"
+      },
+      "UsuarioOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          },
+          "cedula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cedula"
+          },
+          "numero_rol": {
+            "title": "Numero Rol",
+            "type": "string"
+          },
+          "foto_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Foto Url"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "perfiles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Perfiles",
+            "type": "array"
+          },
+          "habilidades": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Habilidades",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "nombre",
+          "cedula",
+          "numero_rol",
+          "foto_url",
+          "estado",
+          "perfiles",
+          "habilidades"
+        ],
+        "title": "UsuarioOut",
+        "type": "object"
+      },
+      "EstadoHistorialOut": {
+        "properties": {
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "fecha": {
+            "format": "date-time",
+            "title": "Fecha",
+            "type": "string"
+          },
+          "modificado_por_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modificado Por Id"
+          },
+          "motivo": {
+            "title": "Motivo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "estado",
+          "fecha",
+          "modificado_por_id",
+          "motivo"
+        ],
+        "title": "EstadoHistorialOut",
+        "type": "object"
+      },
+      "UsuarioDetalleOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          },
+          "cedula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cedula"
+          },
+          "numero_rol": {
+            "title": "Numero Rol",
+            "type": "string"
+          },
+          "foto_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Foto Url"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "perfiles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Perfiles",
+            "type": "array"
+          },
+          "habilidades": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Habilidades",
+            "type": "array"
+          },
+          "tiene_password": {
+            "title": "Tiene Password",
+            "type": "boolean"
+          },
+          "debe_cambiar_password": {
+            "title": "Debe Cambiar Password",
+            "type": "boolean"
+          },
+          "last_login": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Login"
+          },
+          "estado_historial": {
+            "items": {
+              "$ref": "#/components/schemas/EstadoHistorialOut"
+            },
+            "title": "Estado Historial",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "nombre",
+          "cedula",
+          "numero_rol",
+          "foto_url",
+          "estado",
+          "perfiles",
+          "habilidades",
+          "tiene_password",
+          "debe_cambiar_password",
+          "last_login",
+          "estado_historial"
+        ],
+        "title": "UsuarioDetalleOut",
+        "type": "object"
+      },
+      "Rol": {
+        "enum": [
+          "administrador",
+          "supervisor",
+          "ingenieroDeOficina",
+          "tecnicoDeCampo"
+        ],
+        "title": "Rol",
+        "type": "string"
+      },
+      "UsuarioIn": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "nombre": {
+            "maxLength": 150,
+            "minLength": 1,
+            "title": "Nombre",
+            "type": "string"
+          },
+          "cedula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cedula"
+          },
+          "numero_rol": {
+            "default": "",
+            "title": "Numero Rol",
+            "type": "string"
+          },
+          "perfiles": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/Rol"
+            },
+            "title": "Perfiles",
+            "type": "array"
+          },
+          "habilidades": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Habilidades",
+            "type": "array"
+          },
+          "password": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password"
+          }
+        },
+        "required": [
+          "email",
+          "nombre"
+        ],
+        "title": "UsuarioIn",
+        "type": "object"
+      },
+      "UsuarioPatch": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "format": "email",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "nombre": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nombre"
+          },
+          "cedula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cedula"
+          },
+          "numero_rol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Numero Rol"
+          },
+          "perfiles": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Rol"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Perfiles"
+          },
+          "habilidades": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Habilidades"
+          }
+        },
+        "title": "UsuarioPatch",
+        "type": "object"
+      },
+      "EstadoIn": {
+        "properties": {
+          "estado": {
+            "pattern": "^(activo|inactivo)$",
+            "title": "Estado",
+            "type": "string"
+          },
+          "motivo": {
+            "minLength": 1,
+            "title": "Motivo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "estado",
+          "motivo"
+        ],
+        "title": "EstadoIn",
+        "type": "object"
+      },
+      "PasswordTemporalIn": {
+        "properties": {
+          "password": {
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
+        ],
+        "title": "PasswordTemporalIn",
+        "type": "object"
+      },
+      "CatalogosOut": {
+        "properties": {
+          "marcas": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Marcas",
+            "type": "array"
+          },
+          "zonas": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Zonas",
+            "type": "array"
+          },
+          "tipos_equipo": {
+            "items": {
+              "$ref": "#/components/schemas/TipoEquipoConTrabajos"
+            },
+            "title": "Tipos Equipo",
+            "type": "array"
+          },
+          "estados_equipo": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Estados Equipo",
+            "type": "array"
+          },
+          "tipos_vehiculo": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Tipos Vehiculo",
+            "type": "array"
+          },
+          "estados_vehiculo": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Estados Vehiculo",
+            "type": "array"
+          },
+          "urgencias": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Urgencias",
+            "type": "array"
+          },
+          "respuestas_predefinidas": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Respuestas Predefinidas",
+            "type": "array"
+          },
+          "localidades": {
+            "items": {
+              "$ref": "#/components/schemas/LocalidadOut"
+            },
+            "title": "Localidades",
+            "type": "array"
+          },
+          "configuracion": {
+            "$ref": "#/components/schemas/ConfiguracionSchema"
+          }
+        },
+        "required": [
+          "marcas",
+          "zonas",
+          "tipos_equipo",
+          "estados_equipo",
+          "tipos_vehiculo",
+          "estados_vehiculo",
+          "urgencias",
+          "respuestas_predefinidas",
+          "localidades",
+          "configuracion"
+        ],
+        "title": "CatalogosOut",
+        "type": "object"
+      },
+      "ConfiguracionSchema": {
+        "properties": {
+          "empresa_nombre": {
+            "default": "",
+            "title": "Empresa Nombre",
+            "type": "string"
+          },
+          "empresa_unidad_negocio": {
+            "default": "",
+            "title": "Empresa Unidad Negocio",
+            "type": "string"
+          },
+          "empresa_departamento": {
+            "default": "",
+            "title": "Empresa Departamento",
+            "type": "string"
+          },
+          "sede_central_nombre": {
+            "default": "",
+            "title": "Sede Central Nombre",
+            "type": "string"
+          },
+          "sede_central": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Punto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hora_inicio_jornada": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hora Inicio Jornada"
+          },
+          "hora_fin_jornada": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hora Fin Jornada"
+          },
+          "minutos_planificacion": {
+            "default": 0,
+            "title": "Minutos Planificacion",
+            "type": "integer"
+          },
+          "minutos_reporte": {
+            "default": 0,
+            "title": "Minutos Reporte",
+            "type": "integer"
+          },
+          "minutos_almuerzo": {
+            "default": 60,
+            "title": "Minutos Almuerzo",
+            "type": "integer"
+          },
+          "hora_inicio_almuerzo": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hora Inicio Almuerzo"
+          },
+          "hora_fin_almuerzo": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hora Fin Almuerzo"
+          },
+          "zona_horaria": {
+            "default": "America/Guayaquil",
+            "title": "Zona Horaria",
+            "type": "string"
+          }
+        },
+        "title": "ConfiguracionSchema",
+        "type": "object"
+      },
+      "ItemOut": {
+        "properties": {
+          "valor": {
+            "title": "Valor",
+            "type": "string"
+          },
+          "etiqueta": {
+            "title": "Etiqueta",
+            "type": "string"
+          },
+          "activo": {
+            "title": "Activo",
+            "type": "boolean"
+          },
+          "orden": {
+            "title": "Orden",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "valor",
+          "etiqueta",
+          "activo",
+          "orden"
+        ],
+        "title": "ItemOut",
+        "type": "object"
+      },
+      "LocalidadOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          },
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "nombre",
+          "lat",
+          "lng"
+        ],
+        "title": "LocalidadOut",
+        "type": "object"
+      },
+      "Punto": {
+        "properties": {
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ],
+        "title": "Punto",
+        "type": "object"
+      },
+      "TipoEquipoConTrabajos": {
+        "properties": {
+          "valor": {
+            "title": "Valor",
+            "type": "string"
+          },
+          "etiqueta": {
+            "title": "Etiqueta",
+            "type": "string"
+          },
+          "activo": {
+            "title": "Activo",
+            "type": "boolean"
+          },
+          "orden": {
+            "title": "Orden",
+            "type": "integer"
+          },
+          "tipos_trabajo": {
+            "items": {
+              "$ref": "#/components/schemas/TipoTrabajoOut"
+            },
+            "title": "Tipos Trabajo",
+            "type": "array"
+          }
+        },
+        "required": [
+          "valor",
+          "etiqueta",
+          "activo",
+          "orden",
+          "tipos_trabajo"
+        ],
+        "title": "TipoEquipoConTrabajos",
+        "type": "object"
+      },
+      "TipoTrabajoOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "tipo_equipo": {
+            "title": "Tipo Equipo",
+            "type": "string"
+          },
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          },
+          "tiempo_estimado_minutos": {
+            "title": "Tiempo Estimado Minutos",
+            "type": "integer"
+          },
+          "activo": {
+            "title": "Activo",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "tipo_equipo",
+          "nombre",
+          "tiempo_estimado_minutos",
+          "activo"
+        ],
+        "title": "TipoTrabajoOut",
+        "type": "object"
+      },
+      "TipoTrabajoIn": {
+        "properties": {
+          "tipo_equipo": {
+            "title": "Tipo Equipo",
+            "type": "string"
+          },
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          },
+          "tiempo_estimado_minutos": {
+            "default": 30,
+            "title": "Tiempo Estimado Minutos",
+            "type": "integer"
+          },
+          "activo": {
+            "default": true,
+            "title": "Activo",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "tipo_equipo",
+          "nombre"
+        ],
+        "title": "TipoTrabajoIn",
+        "type": "object"
+      },
+      "TipoTrabajoPatch": {
+        "properties": {
+          "nombre": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nombre"
+          },
+          "tiempo_estimado_minutos": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tiempo Estimado Minutos"
+          },
+          "activo": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activo"
+          }
+        },
+        "title": "TipoTrabajoPatch",
+        "type": "object"
+      },
+      "LocalidadIn": {
+        "properties": {
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          },
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          }
+        },
+        "required": [
+          "nombre",
+          "lat",
+          "lng"
+        ],
+        "title": "LocalidadIn",
+        "type": "object"
+      },
+      "ItemIn": {
+        "properties": {
+          "valor": {
+            "title": "Valor",
+            "type": "string"
+          },
+          "etiqueta": {
+            "title": "Etiqueta",
+            "type": "string"
+          },
+          "activo": {
+            "default": true,
+            "title": "Activo",
+            "type": "boolean"
+          },
+          "orden": {
+            "default": 0,
+            "title": "Orden",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "valor",
+          "etiqueta"
+        ],
+        "title": "ItemIn",
+        "type": "object"
+      },
+      "ItemPatch": {
+        "properties": {
+          "etiqueta": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Etiqueta"
+          },
+          "activo": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activo"
+          },
+          "orden": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Orden"
+          }
+        },
+        "title": "ItemPatch",
+        "type": "object"
+      },
+      "VehiculoOut": {
+        "properties": {
+          "codigo": {
+            "title": "Codigo",
+            "type": "string"
+          },
+          "placa": {
+            "title": "Placa",
+            "type": "string"
+          },
+          "tipo": {
+            "title": "Tipo",
+            "type": "string"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "custodio_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custodio Id"
+          }
+        },
+        "required": [
+          "codigo",
+          "placa",
+          "tipo",
+          "estado",
+          "custodio_id"
+        ],
+        "title": "VehiculoOut",
+        "type": "object"
+      },
+      "VehiculoIn": {
+        "properties": {
+          "codigo": {
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Codigo",
+            "type": "string"
+          },
+          "placa": {
+            "maxLength": 15,
+            "minLength": 1,
+            "title": "Placa",
+            "type": "string"
+          },
+          "tipo": {
+            "title": "Tipo",
+            "type": "string"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "custodio_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custodio Id"
+          }
+        },
+        "required": [
+          "codigo",
+          "placa",
+          "tipo",
+          "estado"
+        ],
+        "title": "VehiculoIn",
+        "type": "object"
+      },
+      "VehiculoPatch": {
+        "properties": {
+          "placa": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placa"
+          },
+          "tipo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tipo"
+          },
+          "estado": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estado"
+          },
+          "custodio_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custodio Id"
+          }
+        },
+        "title": "VehiculoPatch",
+        "type": "object"
+      },
+      "Input": {
+        "properties": {
+          "page": {
+            "default": 1,
+            "minimum": 1,
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Size"
+          }
+        },
+        "title": "Input",
+        "type": "object"
+      },
+      "EquipoOut": {
+        "properties": {
+          "codigo": {
+            "title": "Codigo",
+            "type": "string"
+          },
+          "tipo": {
+            "title": "Tipo",
+            "type": "string"
+          },
+          "marca": {
+            "title": "Marca",
+            "type": "string"
+          },
+          "zona": {
+            "title": "Zona",
+            "type": "string"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "direccion": {
+            "title": "Direccion",
+            "type": "string"
+          },
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
+          },
+          "tipo_comunicacion": {
+            "title": "Tipo Comunicacion",
+            "type": "string"
+          },
+          "piloto": {
+            "title": "Piloto",
+            "type": "string"
+          },
+          "fecha_fabricacion": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Fabricacion"
+          },
+          "fecha_ultima_revision": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Ultima Revision"
+          },
+          "revision_count": {
+            "title": "Revision Count",
+            "type": "integer"
+          },
+          "requiere_canasta": {
+            "title": "Requiere Canasta",
+            "type": "boolean"
+          },
+          "zona_peligrosa": {
+            "title": "Zona Peligrosa",
+            "type": "boolean"
+          },
+          "proximo_mantenimiento_programado": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proximo Mantenimiento Programado"
+          },
+          "intervalo_mantenimiento_dias": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intervalo Mantenimiento Dias"
+          },
+          "intervalo_mantenimiento_revisiones": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intervalo Mantenimiento Revisiones"
+          },
+          "campos_adicionales": {
+            "additionalProperties": true,
+            "title": "Campos Adicionales",
+            "type": "object"
+          },
+          "distancia_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distancia M"
+          }
+        },
+        "required": [
+          "codigo",
+          "tipo",
+          "marca",
+          "zona",
+          "estado",
+          "direccion",
+          "lat",
+          "lng",
+          "ip",
+          "tipo_comunicacion",
+          "piloto",
+          "fecha_fabricacion",
+          "fecha_ultima_revision",
+          "revision_count",
+          "requiere_canasta",
+          "zona_peligrosa",
+          "proximo_mantenimiento_programado",
+          "intervalo_mantenimiento_dias",
+          "intervalo_mantenimiento_revisiones",
+          "campos_adicionales"
+        ],
+        "title": "EquipoOut",
+        "type": "object"
+      },
+      "PagedEquipoOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EquipoOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "PagedEquipoOut",
+        "type": "object"
+      },
+      "EquipoDetalleOut": {
+        "properties": {
+          "codigo": {
+            "title": "Codigo",
+            "type": "string"
+          },
+          "tipo": {
+            "title": "Tipo",
+            "type": "string"
+          },
+          "marca": {
+            "title": "Marca",
+            "type": "string"
+          },
+          "zona": {
+            "title": "Zona",
+            "type": "string"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "direccion": {
+            "title": "Direccion",
+            "type": "string"
+          },
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
+          },
+          "tipo_comunicacion": {
+            "title": "Tipo Comunicacion",
+            "type": "string"
+          },
+          "piloto": {
+            "title": "Piloto",
+            "type": "string"
+          },
+          "fecha_fabricacion": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Fabricacion"
+          },
+          "fecha_ultima_revision": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Ultima Revision"
+          },
+          "revision_count": {
+            "title": "Revision Count",
+            "type": "integer"
+          },
+          "requiere_canasta": {
+            "title": "Requiere Canasta",
+            "type": "boolean"
+          },
+          "zona_peligrosa": {
+            "title": "Zona Peligrosa",
+            "type": "boolean"
+          },
+          "proximo_mantenimiento_programado": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proximo Mantenimiento Programado"
+          },
+          "intervalo_mantenimiento_dias": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intervalo Mantenimiento Dias"
+          },
+          "intervalo_mantenimiento_revisiones": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intervalo Mantenimiento Revisiones"
+          },
+          "campos_adicionales": {
+            "additionalProperties": true,
+            "title": "Campos Adicionales",
+            "type": "object"
+          },
+          "distancia_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distancia M"
+          },
+          "estado_historial": {
+            "items": {
+              "$ref": "#/components/schemas/EquipoHistorialOut"
+            },
+            "title": "Estado Historial",
+            "type": "array"
+          }
+        },
+        "required": [
+          "codigo",
+          "tipo",
+          "marca",
+          "zona",
+          "estado",
+          "direccion",
+          "lat",
+          "lng",
+          "ip",
+          "tipo_comunicacion",
+          "piloto",
+          "fecha_fabricacion",
+          "fecha_ultima_revision",
+          "revision_count",
+          "requiere_canasta",
+          "zona_peligrosa",
+          "proximo_mantenimiento_programado",
+          "intervalo_mantenimiento_dias",
+          "intervalo_mantenimiento_revisiones",
+          "campos_adicionales",
+          "estado_historial"
+        ],
+        "title": "EquipoDetalleOut",
+        "type": "object"
+      },
+      "EquipoHistorialOut": {
+        "properties": {
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "fecha": {
+            "format": "date-time",
+            "title": "Fecha",
+            "type": "string"
+          },
+          "modificado_por_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modificado Por Id"
+          },
+          "motivo": {
+            "title": "Motivo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "estado",
+          "fecha",
+          "modificado_por_id",
+          "motivo"
+        ],
+        "title": "EquipoHistorialOut",
+        "type": "object"
+      },
+      "EquipoIn": {
+        "properties": {
+          "tipo": {
+            "title": "Tipo",
+            "type": "string"
+          },
+          "marca": {
+            "title": "Marca",
+            "type": "string"
+          },
+          "zona": {
+            "title": "Zona",
+            "type": "string"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "direccion": {
+            "title": "Direccion",
+            "type": "string"
+          },
+          "lat": {
+            "maximum": 90,
+            "minimum": -90,
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "maximum": 180,
+            "minimum": -180,
+            "title": "Lng",
+            "type": "number"
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
+          },
+          "tipo_comunicacion": {
+            "title": "Tipo Comunicacion",
+            "type": "string"
+          },
+          "piloto": {
+            "default": "",
+            "title": "Piloto",
+            "type": "string"
+          },
+          "fecha_fabricacion": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Fabricacion"
+          },
+          "requiere_canasta": {
+            "default": false,
+            "title": "Requiere Canasta",
+            "type": "boolean"
+          },
+          "zona_peligrosa": {
+            "default": false,
+            "title": "Zona Peligrosa",
+            "type": "boolean"
+          },
+          "proximo_mantenimiento_programado": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proximo Mantenimiento Programado"
+          },
+          "intervalo_mantenimiento_dias": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intervalo Mantenimiento Dias"
+          },
+          "intervalo_mantenimiento_revisiones": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intervalo Mantenimiento Revisiones"
+          },
+          "campos_adicionales": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Campos Adicionales",
+            "type": "object"
+          },
+          "codigo": {
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Codigo",
+            "type": "string"
+          },
+          "fecha_ultima_revision": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Ultima Revision"
+          },
+          "revision_count": {
+            "default": 0,
+            "title": "Revision Count",
+            "type": "integer"
+          },
+          "motivo_estado": {
+            "default": "",
+            "title": "Motivo Estado",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tipo",
+          "marca",
+          "zona",
+          "estado",
+          "direccion",
+          "lat",
+          "lng",
+          "tipo_comunicacion",
+          "codigo"
+        ],
+        "title": "EquipoIn",
+        "type": "object"
+      },
+      "ErrorLote": {
+        "properties": {
+          "codigo": {
+            "title": "Codigo",
+            "type": "string"
+          },
+          "error": {
+            "title": "Error",
+            "type": "string"
+          }
+        },
+        "required": [
+          "codigo",
+          "error"
+        ],
+        "title": "ErrorLote",
+        "type": "object"
+      },
+      "ResultadoLote": {
+        "properties": {
+          "creados": {
+            "title": "Creados",
+            "type": "integer"
+          },
+          "actualizados": {
+            "title": "Actualizados",
+            "type": "integer"
+          },
+          "errores": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorLote"
+            },
+            "title": "Errores",
+            "type": "array"
+          }
+        },
+        "required": [
+          "creados",
+          "actualizados",
+          "errores"
+        ],
+        "title": "ResultadoLote",
+        "type": "object"
+      },
+      "EquipoPatch": {
+        "properties": {
+          "tipo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tipo"
+          },
+          "marca": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Marca"
+          },
+          "zona": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zona"
+          },
+          "estado": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estado"
+          },
+          "motivo_estado": {
+            "default": "",
+            "title": "Motivo Estado",
+            "type": "string"
+          },
+          "direccion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Direccion"
+          },
+          "lat": {
+            "anyOf": [
+              {
+                "maximum": 90,
+                "minimum": -90,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lat"
+          },
+          "lng": {
+            "anyOf": [
+              {
+                "maximum": 180,
+                "minimum": -180,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lng"
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
+          },
+          "tipo_comunicacion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tipo Comunicacion"
+          },
+          "piloto": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Piloto"
+          },
+          "fecha_fabricacion": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Fabricacion"
+          },
+          "requiere_canasta": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requiere Canasta"
+          },
+          "zona_peligrosa": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zona Peligrosa"
+          },
+          "proximo_mantenimiento_programado": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proximo Mantenimiento Programado"
+          },
+          "intervalo_mantenimiento_dias": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intervalo Mantenimiento Dias"
+          },
+          "intervalo_mantenimiento_revisiones": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intervalo Mantenimiento Revisiones"
+          },
+          "campos_adicionales": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campos Adicionales"
+          }
+        },
+        "title": "EquipoPatch",
+        "type": "object"
+      },
+      "PagedSolicitudOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SolicitudOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "PagedSolicitudOut",
+        "type": "object"
+      },
+      "SolicitudOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "display_id": {
+            "title": "Display Id",
+            "type": "string"
+          },
+          "equipo": {
+            "title": "Equipo",
+            "type": "string"
+          },
+          "fecha_solicitud": {
+            "format": "date-time",
+            "title": "Fecha Solicitud",
+            "type": "string"
+          },
+          "fecha_programada": {
+            "format": "date",
+            "title": "Fecha Programada",
+            "type": "string"
+          },
+          "tipo_trabajo_id": {
+            "title": "Tipo Trabajo Id",
+            "type": "integer"
+          },
+          "tipo_trabajo_nombre": {
+            "title": "Tipo Trabajo Nombre",
+            "type": "string"
+          },
+          "tiempo_servicio_estimado": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tiempo Servicio Estimado"
+          },
+          "urgencia": {
+            "title": "Urgencia",
+            "type": "string"
+          },
+          "descripcion": {
+            "title": "Descripcion",
+            "type": "string"
+          },
+          "creado_por_id": {
+            "title": "Creado Por Id",
+            "type": "integer"
+          },
+          "creado_por_nombre": {
+            "title": "Creado Por Nombre",
+            "type": "string"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "motivo_cancelacion": {
+            "title": "Motivo Cancelacion",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "display_id",
+          "equipo",
+          "fecha_solicitud",
+          "fecha_programada",
+          "tipo_trabajo_id",
+          "tipo_trabajo_nombre",
+          "tiempo_servicio_estimado",
+          "urgencia",
+          "descripcion",
+          "creado_por_id",
+          "creado_por_nombre",
+          "estado",
+          "motivo_cancelacion"
+        ],
+        "title": "SolicitudOut",
+        "type": "object"
+      },
+      "SolicitudIn": {
+        "properties": {
+          "equipo": {
+            "title": "Equipo",
+            "type": "string"
+          },
+          "tipo_trabajo_id": {
+            "title": "Tipo Trabajo Id",
+            "type": "integer"
+          },
+          "urgencia": {
+            "title": "Urgencia",
+            "type": "string"
+          },
+          "fecha_programada": {
+            "format": "date",
+            "title": "Fecha Programada",
+            "type": "string"
+          },
+          "tiempo_servicio_estimado": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tiempo Servicio Estimado"
+          },
+          "descripcion": {
+            "default": "",
+            "title": "Descripcion",
+            "type": "string"
+          }
+        },
+        "required": [
+          "equipo",
+          "tipo_trabajo_id",
+          "urgencia",
+          "fecha_programada"
+        ],
+        "title": "SolicitudIn",
+        "type": "object"
+      },
+      "SolicitudPatch": {
+        "properties": {
+          "tipo_trabajo_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tipo Trabajo Id"
+          },
+          "urgencia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Urgencia"
+          },
+          "fecha_programada": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Programada"
+          },
+          "tiempo_servicio_estimado": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tiempo Servicio Estimado"
+          },
+          "descripcion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descripcion"
+          }
+        },
+        "title": "SolicitudPatch",
+        "type": "object"
+      },
+      "MotivoIn": {
+        "properties": {
+          "motivo": {
+            "minLength": 1,
+            "title": "Motivo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "motivo"
+        ],
+        "title": "MotivoIn",
+        "type": "object"
+      },
+      "UnidadCampoSchema": {
+        "properties": {
+          "vehiculo": {
+            "title": "Vehiculo",
+            "type": "string"
+          },
+          "tecnicos": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Tecnicos",
+            "type": "array"
+          }
+        },
+        "required": [
+          "vehiculo",
+          "tecnicos"
+        ],
+        "title": "UnidadCampoSchema",
+        "type": "object"
+      },
+      "OrdenOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "display_id": {
+            "title": "Display Id",
+            "type": "string"
+          },
+          "fecha_creacion": {
+            "format": "date-time",
+            "title": "Fecha Creacion",
+            "type": "string"
+          },
+          "creado_por_id": {
+            "title": "Creado Por Id",
+            "type": "integer"
+          },
+          "creado_por_nombre": {
+            "title": "Creado Por Nombre",
+            "type": "string"
+          },
+          "estado_general": {
+            "title": "Estado General",
+            "type": "string"
+          },
+          "unidades": {
+            "items": {
+              "$ref": "#/components/schemas/UnidadAsignadaOut"
+            },
+            "title": "Unidades",
+            "type": "array"
+          },
+          "trabajos_por_estado": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Trabajos Por Estado",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "display_id",
+          "fecha_creacion",
+          "creado_por_id",
+          "creado_por_nombre",
+          "estado_general",
+          "unidades",
+          "trabajos_por_estado"
+        ],
+        "title": "OrdenOut",
+        "type": "object"
+      },
+      "PagedOrdenOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrdenOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "PagedOrdenOut",
+        "type": "object"
+      },
+      "TecnicoRef": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nombre"
+        ],
+        "title": "TecnicoRef",
+        "type": "object"
+      },
+      "UnidadAsignadaOut": {
+        "properties": {
+          "ruta_id": {
+            "title": "Ruta Id",
+            "type": "string"
+          },
+          "vehiculo": {
+            "title": "Vehiculo",
+            "type": "string"
+          },
+          "placa": {
+            "title": "Placa",
+            "type": "string"
+          },
+          "tecnicos": {
+            "items": {
+              "$ref": "#/components/schemas/TecnicoRef"
+            },
+            "title": "Tecnicos",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ruta_id",
+          "vehiculo",
+          "placa",
+          "tecnicos"
+        ],
+        "title": "UnidadAsignadaOut",
+        "type": "object"
+      },
+      "EquipoResumen": {
+        "properties": {
+          "codigo": {
+            "title": "Codigo",
+            "type": "string"
+          },
+          "direccion": {
+            "title": "Direccion",
+            "type": "string"
+          },
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          },
+          "tipo": {
+            "title": "Tipo",
+            "type": "string"
+          },
+          "marca": {
+            "title": "Marca",
+            "type": "string"
+          },
+          "zona": {
+            "title": "Zona",
+            "type": "string"
+          },
+          "requiere_canasta": {
+            "title": "Requiere Canasta",
+            "type": "boolean"
+          },
+          "zona_peligrosa": {
+            "title": "Zona Peligrosa",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "codigo",
+          "direccion",
+          "lat",
+          "lng",
+          "tipo",
+          "marca",
+          "zona",
+          "requiere_canasta",
+          "zona_peligrosa"
+        ],
+        "title": "EquipoResumen",
+        "type": "object"
+      },
+      "FotoOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "subida_en": {
+            "format": "date-time",
+            "title": "Subida En",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "subida_en"
+        ],
+        "title": "FotoOut",
+        "type": "object"
+      },
+      "OrdenDetalleOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "display_id": {
+            "title": "Display Id",
+            "type": "string"
+          },
+          "fecha_creacion": {
+            "format": "date-time",
+            "title": "Fecha Creacion",
+            "type": "string"
+          },
+          "creado_por_id": {
+            "title": "Creado Por Id",
+            "type": "integer"
+          },
+          "creado_por_nombre": {
+            "title": "Creado Por Nombre",
+            "type": "string"
+          },
+          "estado_general": {
+            "title": "Estado General",
+            "type": "string"
+          },
+          "unidades": {
+            "items": {
+              "$ref": "#/components/schemas/UnidadAsignadaOut"
+            },
+            "title": "Unidades",
+            "type": "array"
+          },
+          "trabajos_por_estado": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Trabajos Por Estado",
+            "type": "object"
+          },
+          "trabajos": {
+            "items": {
+              "$ref": "#/components/schemas/TrabajoOut"
+            },
+            "title": "Trabajos",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "display_id",
+          "fecha_creacion",
+          "creado_por_id",
+          "creado_por_nombre",
+          "estado_general",
+          "unidades",
+          "trabajos_por_estado",
+          "trabajos"
+        ],
+        "title": "OrdenDetalleOut",
+        "type": "object"
+      },
+      "TrabajoOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "codigo": {
+            "title": "Codigo",
+            "type": "string"
+          },
+          "secuencia": {
+            "title": "Secuencia",
+            "type": "integer"
+          },
+          "orden_id": {
+            "title": "Orden Id",
+            "type": "integer"
+          },
+          "orden_display_id": {
+            "title": "Orden Display Id",
+            "type": "string"
+          },
+          "equipo": {
+            "$ref": "#/components/schemas/EquipoResumen"
+          },
+          "solicitud_id": {
+            "title": "Solicitud Id",
+            "type": "integer"
+          },
+          "solicitud_display_id": {
+            "title": "Solicitud Display Id",
+            "type": "string"
+          },
+          "tipo_trabajo_id": {
+            "title": "Tipo Trabajo Id",
+            "type": "integer"
+          },
+          "tipo_trabajo_nombre": {
+            "title": "Tipo Trabajo Nombre",
+            "type": "string"
+          },
+          "tiempo_servicio_estimado": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tiempo Servicio Estimado"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "detalles": {
+            "title": "Detalles",
+            "type": "string"
+          },
+          "hallazgos": {
+            "title": "Hallazgos",
+            "type": "string"
+          },
+          "completado_por_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completado Por Id"
+          },
+          "fecha_finalizacion": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Finalizacion"
+          },
+          "observacion_ingeniero": {
+            "title": "Observacion Ingeniero",
+            "type": "string"
+          },
+          "observacion_ingeniero_por_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observacion Ingeniero Por Id"
+          },
+          "fecha_observacion_ingeniero": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Observacion Ingeniero"
+          },
+          "requiere_nueva_revision": {
+            "title": "Requiere Nueva Revision",
+            "type": "boolean"
+          },
+          "fecha_nueva_revision": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Nueva Revision"
+          },
+          "motivo_cancelacion": {
+            "title": "Motivo Cancelacion",
+            "type": "string"
+          },
+          "fotos": {
+            "items": {
+              "$ref": "#/components/schemas/FotoOut"
+            },
+            "title": "Fotos",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "secuencia",
+          "orden_id",
+          "orden_display_id",
+          "equipo",
+          "solicitud_id",
+          "solicitud_display_id",
+          "tipo_trabajo_id",
+          "tipo_trabajo_nombre",
+          "tiempo_servicio_estimado",
+          "estado",
+          "detalles",
+          "hallazgos",
+          "completado_por_id",
+          "fecha_finalizacion",
+          "observacion_ingeniero",
+          "observacion_ingeniero_por_id",
+          "fecha_observacion_ingeniero",
+          "requiere_nueva_revision",
+          "fecha_nueva_revision",
+          "motivo_cancelacion",
+          "fotos"
+        ],
+        "title": "TrabajoOut",
+        "type": "object"
+      },
+      "OrdenIn": {
+        "properties": {
+          "unidades": {
+            "items": {
+              "$ref": "#/components/schemas/UnidadAsignadaIn"
+            },
+            "minItems": 1,
+            "title": "Unidades",
+            "type": "array"
+          },
+          "solicitudes": {
+            "items": {
+              "type": "integer"
+            },
+            "minItems": 1,
+            "title": "Solicitudes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "unidades",
+          "solicitudes"
+        ],
+        "title": "OrdenIn",
+        "type": "object"
+      },
+      "UnidadAsignadaIn": {
+        "properties": {
+          "ruta_id": {
+            "default": "",
+            "title": "Ruta Id",
+            "type": "string"
+          },
+          "vehiculo": {
+            "title": "Vehiculo",
+            "type": "string"
+          },
+          "tecnicos": {
+            "items": {
+              "type": "integer"
+            },
+            "minItems": 1,
+            "title": "Tecnicos",
+            "type": "array"
+          }
+        },
+        "required": [
+          "vehiculo",
+          "tecnicos"
+        ],
+        "title": "UnidadAsignadaIn",
+        "type": "object"
+      },
+      "PagedTrabajoOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TrabajoOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "PagedTrabajoOut",
+        "type": "object"
+      },
+      "ReporteIn": {
+        "description": "Lo que envía el técnico al cerrar un trabajo.",
+        "properties": {
+          "estado": {
+            "enum": [
+              "Completado",
+              "No Completado"
+            ],
+            "title": "Estado",
+            "type": "string"
+          },
+          "detalles": {
+            "default": "",
+            "title": "Detalles",
+            "type": "string"
+          },
+          "hallazgos": {
+            "default": "",
+            "title": "Hallazgos",
+            "type": "string"
+          }
+        },
+        "required": [
+          "estado"
+        ],
+        "title": "ReporteIn",
+        "type": "object"
+      },
+      "RevisionIn": {
+        "description": "Revisión del ingeniero o supervisor; todos los campos son opcionales.",
+        "properties": {
+          "estado": {
+            "anyOf": [
+              {
+                "enum": [
+                  "Pendiente",
+                  "Completado",
+                  "No Completado"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estado"
+          },
+          "observacion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observacion"
+          },
+          "requiere_nueva_revision": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requiere Nueva Revision"
+          },
+          "fecha_nueva_revision": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Nueva Revision"
+          }
+        },
+        "title": "RevisionIn",
+        "type": "object"
+      },
+      "PlanOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          },
+          "fecha_creacion": {
+            "format": "date-time",
+            "title": "Fecha Creacion",
+            "type": "string"
+          },
+          "creado_por_id": {
+            "title": "Creado Por Id",
+            "type": "integer"
+          },
+          "tiempo_de_ejecucion_dias": {
+            "title": "Tiempo De Ejecucion Dias",
+            "type": "integer"
+          },
+          "exclusiones": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Exclusiones",
+            "type": "array"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "estadisticas": {
+            "additionalProperties": true,
+            "title": "Estadisticas",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "nombre",
+          "fecha_creacion",
+          "creado_por_id",
+          "tiempo_de_ejecucion_dias",
+          "exclusiones",
+          "estado",
+          "estadisticas"
+        ],
+        "title": "PlanOut",
+        "type": "object"
+      },
+      "MantenimientoOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "equipo": {
+            "title": "Equipo",
+            "type": "string"
+          },
+          "fecha_programada": {
+            "format": "date",
+            "title": "Fecha Programada",
+            "type": "string"
+          },
+          "solicitud_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Solicitud Id"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "motivo_prioridad": {
+            "title": "Motivo Prioridad",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "equipo",
+          "fecha_programada",
+          "solicitud_id",
+          "estado",
+          "motivo_prioridad"
+        ],
+        "title": "MantenimientoOut",
+        "type": "object"
+      },
+      "PlanDetalleOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          },
+          "fecha_creacion": {
+            "format": "date-time",
+            "title": "Fecha Creacion",
+            "type": "string"
+          },
+          "creado_por_id": {
+            "title": "Creado Por Id",
+            "type": "integer"
+          },
+          "tiempo_de_ejecucion_dias": {
+            "title": "Tiempo De Ejecucion Dias",
+            "type": "integer"
+          },
+          "exclusiones": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Exclusiones",
+            "type": "array"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "estadisticas": {
+            "additionalProperties": true,
+            "title": "Estadisticas",
+            "type": "object"
+          },
+          "calendario": {
+            "items": {
+              "$ref": "#/components/schemas/MantenimientoOut"
+            },
+            "title": "Calendario",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "nombre",
+          "fecha_creacion",
+          "creado_por_id",
+          "tiempo_de_ejecucion_dias",
+          "exclusiones",
+          "estado",
+          "estadisticas",
+          "calendario"
+        ],
+        "title": "PlanDetalleOut",
+        "type": "object"
+      },
+      "ExclusionIn": {
+        "properties": {
+          "campo": {
+            "enum": [
+              "tipo",
+              "marca",
+              "zona",
+              "zonaPeligrosa"
+            ],
+            "title": "Campo",
+            "type": "string"
+          },
+          "operador": {
+            "enum": [
+              "es",
+              "no_es"
+            ],
+            "title": "Operador",
+            "type": "string"
+          },
+          "valor": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Valor"
+          }
+        },
+        "required": [
+          "campo",
+          "operador",
+          "valor"
+        ],
+        "title": "ExclusionIn",
+        "type": "object"
+      },
+      "MantenimientoIn": {
+        "properties": {
+          "equipo": {
+            "title": "Equipo",
+            "type": "string"
+          },
+          "fecha_programada": {
+            "format": "date",
+            "title": "Fecha Programada",
+            "type": "string"
+          },
+          "motivo_prioridad": {
+            "default": "",
+            "title": "Motivo Prioridad",
+            "type": "string"
+          }
+        },
+        "required": [
+          "equipo",
+          "fecha_programada"
+        ],
+        "title": "MantenimientoIn",
+        "type": "object"
+      },
+      "PlanIn": {
+        "properties": {
+          "nombre": {
+            "minLength": 1,
+            "title": "Nombre",
+            "type": "string"
+          },
+          "tiempo_de_ejecucion_dias": {
+            "exclusiveMinimum": 0,
+            "title": "Tiempo De Ejecucion Dias",
+            "type": "integer"
+          },
+          "exclusiones": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ExclusionIn"
+            },
+            "title": "Exclusiones",
+            "type": "array"
+          },
+          "estado": {
+            "default": "borrador",
+            "enum": [
+              "borrador",
+              "activo",
+              "completado",
+              "archivado"
+            ],
+            "title": "Estado",
+            "type": "string"
+          },
+          "estadisticas": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Estadisticas",
+            "type": "object"
+          },
+          "calendario": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/MantenimientoIn"
+            },
+            "title": "Calendario",
+            "type": "array"
+          }
+        },
+        "required": [
+          "nombre",
+          "tiempo_de_ejecucion_dias"
+        ],
+        "title": "PlanIn",
+        "type": "object"
+      },
+      "PlanPatch": {
+        "properties": {
+          "nombre": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nombre"
+          },
+          "estado": {
+            "anyOf": [
+              {
+                "enum": [
+                  "borrador",
+                  "activo",
+                  "completado",
+                  "archivado"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estado"
+          }
+        },
+        "title": "PlanPatch",
+        "type": "object"
+      },
+      "PrevisualizacionOut": {
+        "properties": {
+          "total_equipos_considerados": {
+            "title": "Total Equipos Considerados",
+            "type": "integer"
+          },
+          "total_equipos_excluidos": {
+            "title": "Total Equipos Excluidos",
+            "type": "integer"
+          },
+          "calendario": {
+            "items": {
+              "$ref": "#/components/schemas/ProgramacionOut"
+            },
+            "title": "Calendario",
+            "type": "array"
+          }
+        },
+        "required": [
+          "total_equipos_considerados",
+          "total_equipos_excluidos",
+          "calendario"
+        ],
+        "title": "PrevisualizacionOut",
+        "type": "object"
+      },
+      "ProgramacionOut": {
+        "properties": {
+          "equipo": {
+            "title": "Equipo",
+            "type": "string"
+          },
+          "fecha_programada": {
+            "format": "date",
+            "title": "Fecha Programada",
+            "type": "string"
+          },
+          "motivo_prioridad": {
+            "title": "Motivo Prioridad",
+            "type": "string"
+          }
+        },
+        "required": [
+          "equipo",
+          "fecha_programada",
+          "motivo_prioridad"
+        ],
+        "title": "ProgramacionOut",
+        "type": "object"
+      },
+      "GenerarPlanIn": {
+        "description": "Parámetros del planificador de reglas fijas.",
+        "properties": {
+          "nombre": {
+            "minLength": 1,
+            "title": "Nombre",
+            "type": "string"
+          },
+          "tiempo_de_ejecucion_dias": {
+            "description": "Días hábiles del plan",
+            "exclusiveMinimum": 0,
+            "title": "Tiempo De Ejecucion Dias",
+            "type": "integer"
+          },
+          "exclusiones": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ExclusionIn"
+            },
+            "title": "Exclusiones",
+            "type": "array"
+          },
+          "fecha_inicio": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Inicio"
+          }
+        },
+        "required": [
+          "nombre",
+          "tiempo_de_ejecucion_dias"
+        ],
+        "title": "GenerarPlanIn",
+        "type": "object"
+      },
+      "GenerarSolicitudesOut": {
+        "properties": {
+          "creadas": {
+            "title": "Creadas",
+            "type": "integer"
+          },
+          "errores": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Errores",
+            "type": "array"
+          }
+        },
+        "required": [
+          "creadas",
+          "errores"
+        ],
+        "title": "GenerarSolicitudesOut",
+        "type": "object"
+      },
+      "GenerarSolicitudesIn": {
+        "properties": {
+          "items": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Items"
+          },
+          "tipo_trabajo": {
+            "default": "Mantenimiento preventivo",
+            "title": "Tipo Trabajo",
+            "type": "string"
+          },
+          "urgencia": {
+            "default": "normal",
+            "title": "Urgencia",
+            "type": "string"
+          }
+        },
+        "title": "GenerarSolicitudesIn",
+        "type": "object"
+      },
+      "KpisOut": {
+        "properties": {
+          "ordenes_del_dia": {
+            "title": "Ordenes Del Dia",
+            "type": "integer"
+          },
+          "trabajos_pendientes_total": {
+            "title": "Trabajos Pendientes Total",
+            "type": "integer"
+          },
+          "trabajos_completados_hoy": {
+            "title": "Trabajos Completados Hoy",
+            "type": "integer"
+          },
+          "trabajos_pendientes_creados_hoy": {
+            "title": "Trabajos Pendientes Creados Hoy",
+            "type": "integer"
+          },
+          "trabajos_no_completados_creados_hoy": {
+            "title": "Trabajos No Completados Creados Hoy",
+            "type": "integer"
+          },
+          "solicitudes_pendientes": {
+            "title": "Solicitudes Pendientes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ordenes_del_dia",
+          "trabajos_pendientes_total",
+          "trabajos_completados_hoy",
+          "trabajos_pendientes_creados_hoy",
+          "trabajos_no_completados_creados_hoy",
+          "solicitudes_pendientes"
+        ],
+        "title": "KpisOut",
+        "type": "object"
+      },
+      "TendenciaDia": {
+        "properties": {
+          "fecha": {
+            "format": "date",
+            "title": "Fecha",
+            "type": "string"
+          },
+          "ordenes": {
+            "title": "Ordenes",
+            "type": "integer"
+          },
+          "pendientes": {
+            "title": "Pendientes",
+            "type": "integer"
+          },
+          "completados": {
+            "title": "Completados",
+            "type": "integer"
+          },
+          "no_completados": {
+            "title": "No Completados",
+            "type": "integer"
+          },
+          "cancelados": {
+            "title": "Cancelados",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "fecha",
+          "ordenes",
+          "pendientes",
+          "completados",
+          "no_completados",
+          "cancelados"
+        ],
+        "title": "TendenciaDia",
+        "type": "object"
+      },
+      "NotificacionOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "mensaje": {
+            "title": "Mensaje",
+            "type": "string"
+          },
+          "tipo": {
+            "title": "Tipo",
+            "type": "string"
+          },
+          "fecha_creacion": {
+            "format": "date-time",
+            "title": "Fecha Creacion",
+            "type": "string"
+          },
+          "leida": {
+            "title": "Leida",
+            "type": "boolean"
+          },
+          "entidad_id": {
+            "title": "Entidad Id",
+            "type": "string"
+          },
+          "entidad_url": {
+            "title": "Entidad Url",
+            "type": "string"
+          },
+          "creada_por_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Creada Por Id"
+          },
+          "creada_por_nombre": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Creada Por Nombre"
+          }
+        },
+        "required": [
+          "id",
+          "mensaje",
+          "tipo",
+          "fecha_creacion",
+          "leida",
+          "entidad_id",
+          "entidad_url",
+          "creada_por_id",
+          "creada_por_nombre"
+        ],
+        "title": "NotificacionOut",
+        "type": "object"
+      },
+      "PagedNotificacionOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/NotificacionOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "PagedNotificacionOut",
+        "type": "object"
+      },
+      "ConteoOut": {
+        "properties": {
+          "no_leidas": {
+            "title": "No Leidas",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "no_leidas"
+        ],
+        "title": "ConteoOut",
+        "type": "object"
+      },
+      "MarcadasOut": {
+        "properties": {
+          "marcadas": {
+            "title": "Marcadas",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "marcadas"
+        ],
+        "title": "MarcadasOut",
+        "type": "object"
+      },
+      "SolicitudesMes": {
+        "properties": {
+          "mes": {
+            "title": "Mes",
+            "type": "string"
+          },
+          "solicitudes_creadas": {
+            "title": "Solicitudes Creadas",
+            "type": "integer"
+          },
+          "trabajos_completados": {
+            "title": "Trabajos Completados",
+            "type": "integer"
+          },
+          "porcentaje_exito": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Porcentaje Exito"
+          }
+        },
+        "required": [
+          "mes",
+          "solicitudes_creadas",
+          "trabajos_completados",
+          "porcentaje_exito"
+        ],
+        "title": "SolicitudesMes",
+        "type": "object"
+      },
+      "FilaProductividad": {
+        "properties": {
+          "mes": {
+            "title": "Mes",
+            "type": "string"
+          },
+          "por_tipo": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Por Tipo",
+            "type": "object"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "mes",
+          "por_tipo",
+          "total"
+        ],
+        "title": "FilaProductividad",
+        "type": "object"
+      },
+      "Productividad": {
+        "properties": {
+          "tipos": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tipos",
+            "type": "array"
+          },
+          "filas": {
+            "items": {
+              "$ref": "#/components/schemas/FilaProductividad"
+            },
+            "title": "Filas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tipos",
+          "filas"
+        ],
+        "title": "Productividad",
+        "type": "object"
+      },
+      "FilaRanking": {
+        "properties": {
+          "equipo": {
+            "title": "Equipo",
+            "type": "string"
+          },
+          "tipo_equipo": {
+            "title": "Tipo Equipo",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          },
+          "no_completados": {
+            "title": "No Completados",
+            "type": "integer"
+          },
+          "por_tipo": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Por Tipo",
+            "type": "object"
+          }
+        },
+        "required": [
+          "equipo",
+          "tipo_equipo",
+          "total",
+          "no_completados",
+          "por_tipo"
+        ],
+        "title": "FilaRanking",
+        "type": "object"
+      },
+      "Ranking": {
+        "properties": {
+          "tipos": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tipos",
+            "type": "array"
+          },
+          "filas": {
+            "items": {
+              "$ref": "#/components/schemas/FilaRanking"
+            },
+            "title": "Filas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tipos",
+          "filas"
+        ],
+        "title": "Ranking",
+        "type": "object"
+      },
+      "EstadisticasTecnicos": {
+        "properties": {
+          "tipos": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tipos",
+            "type": "array"
+          },
+          "filas": {
+            "items": {
+              "$ref": "#/components/schemas/FilaTecnico"
+            },
+            "title": "Filas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tipos",
+          "filas"
+        ],
+        "title": "EstadisticasTecnicos",
+        "type": "object"
+      },
+      "FilaTecnico": {
+        "properties": {
+          "tecnico_id": {
+            "title": "Tecnico Id",
+            "type": "integer"
+          },
+          "nombre": {
+            "title": "Nombre",
+            "type": "string"
+          },
+          "atendidos": {
+            "title": "Atendidos",
+            "type": "integer"
+          },
+          "completados": {
+            "title": "Completados",
+            "type": "integer"
+          },
+          "no_completados": {
+            "title": "No Completados",
+            "type": "integer"
+          },
+          "efectividad": {
+            "title": "Efectividad",
+            "type": "number"
+          },
+          "por_tipo": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Por Tipo",
+            "type": "object"
+          }
+        },
+        "required": [
+          "tecnico_id",
+          "nombre",
+          "atendidos",
+          "completados",
+          "no_completados",
+          "efectividad",
+          "por_tipo"
+        ],
+        "title": "FilaTecnico",
+        "type": "object"
+      },
+      "NoAsignadaOut": {
+        "properties": {
+          "solicitud_id": {
+            "title": "Solicitud Id",
+            "type": "integer"
+          },
+          "display_id": {
+            "title": "Display Id",
+            "type": "string"
+          },
+          "equipo": {
+            "title": "Equipo",
+            "type": "string"
+          },
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          },
+          "urgente": {
+            "title": "Urgente",
+            "type": "boolean"
+          },
+          "motivo": {
+            "title": "Motivo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "solicitud_id",
+          "display_id",
+          "equipo",
+          "lat",
+          "lng",
+          "urgente",
+          "motivo"
+        ],
+        "title": "NoAsignadaOut",
+        "type": "object"
+      },
+      "PlanRutasOut": {
+        "properties": {
+          "sede": {
+            "$ref": "#/components/schemas/Punto"
+          },
+          "jornada_min": {
+            "title": "Jornada Min",
+            "type": "integer"
+          },
+          "hora_inicio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hora Inicio"
+          },
+          "fuente_tiempos": {
+            "title": "Fuente Tiempos",
+            "type": "string"
+          },
+          "rutas": {
+            "items": {
+              "$ref": "#/components/schemas/RutaOut"
+            },
+            "title": "Rutas",
+            "type": "array"
+          },
+          "no_asignadas": {
+            "items": {
+              "$ref": "#/components/schemas/NoAsignadaOut"
+            },
+            "title": "No Asignadas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sede",
+          "jornada_min",
+          "hora_inicio",
+          "fuente_tiempos",
+          "rutas",
+          "no_asignadas"
+        ],
+        "title": "PlanRutasOut",
+        "type": "object"
+      },
+      "RutaOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "vehiculos": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Vehiculos",
+            "type": "array"
+          },
+          "visitas": {
+            "items": {
+              "$ref": "#/components/schemas/VisitaOut"
+            },
+            "title": "Visitas",
+            "type": "array"
+          },
+          "minutos_viaje": {
+            "title": "Minutos Viaje",
+            "type": "integer"
+          },
+          "minutos_servicio": {
+            "title": "Minutos Servicio",
+            "type": "integer"
+          },
+          "minutos_total": {
+            "title": "Minutos Total",
+            "type": "integer"
+          },
+          "geometria": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "title": "Geometria",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "vehiculos",
+          "visitas",
+          "minutos_viaje",
+          "minutos_servicio",
+          "minutos_total",
+          "geometria"
+        ],
+        "title": "RutaOut",
+        "type": "object"
+      },
+      "VisitaOut": {
+        "properties": {
+          "solicitud_id": {
+            "title": "Solicitud Id",
+            "type": "integer"
+          },
+          "display_id": {
+            "title": "Display Id",
+            "type": "string"
+          },
+          "equipo": {
+            "title": "Equipo",
+            "type": "string"
+          },
+          "direccion": {
+            "title": "Direccion",
+            "type": "string"
+          },
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          },
+          "llegada_min": {
+            "title": "Llegada Min",
+            "type": "integer"
+          },
+          "servicio_min": {
+            "title": "Servicio Min",
+            "type": "integer"
+          },
+          "urgente": {
+            "title": "Urgente",
+            "type": "boolean"
+          },
+          "requiere_canasta": {
+            "title": "Requiere Canasta",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "solicitud_id",
+          "display_id",
+          "equipo",
+          "direccion",
+          "lat",
+          "lng",
+          "llegada_min",
+          "servicio_min",
+          "urgente",
+          "requiere_canasta"
+        ],
+        "title": "VisitaOut",
+        "type": "object"
+      },
+      "OptimizarIn": {
+        "properties": {
+          "fecha": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha"
+          },
+          "solicitudes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Solicitudes"
+          },
+          "rutas": {
+            "items": {
+              "$ref": "#/components/schemas/RutaIn"
+            },
+            "minItems": 1,
+            "title": "Rutas",
+            "type": "array"
+          },
+          "tiempo_limite_s": {
+            "default": 10,
+            "maximum": 60,
+            "minimum": 1,
+            "title": "Tiempo Limite S",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rutas"
+        ],
+        "title": "OptimizarIn",
+        "type": "object"
+      },
+      "RutaIn": {
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "vehiculos": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Vehiculos",
+            "type": "array"
+          },
+          "fijas": {
+            "default": [],
+            "items": {
+              "type": "integer"
+            },
+            "title": "Fijas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "vehiculos"
+        ],
+        "title": "RutaIn",
+        "type": "object"
+      },
+      "RutaDelDia": {
+        "properties": {
+          "orden_id": {
+            "title": "Orden Id",
+            "type": "integer"
+          },
+          "display_id": {
+            "title": "Display Id",
+            "type": "string"
+          },
+          "estado_general": {
+            "title": "Estado General",
+            "type": "string"
+          },
+          "placas": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Placas",
+            "type": "array"
+          },
+          "tecnicos": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tecnicos",
+            "type": "array"
+          },
+          "trabajos": {
+            "items": {
+              "$ref": "#/components/schemas/TrabajoMapa"
+            },
+            "title": "Trabajos",
+            "type": "array"
+          },
+          "geometria": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "title": "Geometria",
+            "type": "array"
+          }
+        },
+        "required": [
+          "orden_id",
+          "display_id",
+          "estado_general",
+          "placas",
+          "tecnicos",
+          "trabajos",
+          "geometria"
+        ],
+        "title": "RutaDelDia",
+        "type": "object"
+      },
+      "RutasDelDiaOut": {
+        "properties": {
+          "sede": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Punto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rutas": {
+            "items": {
+              "$ref": "#/components/schemas/RutaDelDia"
+            },
+            "title": "Rutas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sede",
+          "rutas"
+        ],
+        "title": "RutasDelDiaOut",
+        "type": "object"
+      },
+      "TrabajoMapa": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "secuencia": {
+            "title": "Secuencia",
+            "type": "integer"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "equipo": {
+            "title": "Equipo",
+            "type": "string"
+          },
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "secuencia",
+          "estado",
+          "equipo",
+          "lat",
+          "lng"
+        ],
+        "title": "TrabajoMapa",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "SessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sessionid"
+      }
+    }
+  },
+  "servers": []
+}

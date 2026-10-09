@@ -1,0 +1,50 @@
+# DOMAIN=app.tudominio.com obtiene un certificado de Let's Encrypt automáticamente.
+# Con DOMAIN=:80 se sirve sin TLS: para pruebas o detrás de otro proxy (Coolify).
+{
+	servers {
+		# Detrás de otro proxy que termina el HTTPS (TRUSTED_PROXIES=private_ranges
+		# en Coolify) hay que conservar sus X-Forwarded-*; si no, Caddy los
+		# reescribe: Django creería que la petición llegó por http y perdería la
+		# IP real del cliente.
+		trusted_proxies static {$TRUSTED_PROXIES:127.0.0.1/32}
+	}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# API, autenticación, admin y estáticos del admin → Django.
+	@django path /api/* /admin/* /static/*
+	handle @django {
+		reverse_proxy backend:8000
+	}
+
+	# Archivos subidos: solo con sesión válida (Django responde 200/401).
+	handle /media/* {
+		forward_auth backend:8000 {
+			uri /api/media-auth
+		}
+		root * /srv
+		file_server
+	}
+
+	# Mapa base autoalojado (PMTiles + fuentes e iconos). Se leen por rangos de
+	# bytes y cambian solo al volver a ejecutar deploy/mapas/preparar.sh.
+	handle /mapas/* {
+		header Cache-Control "public, max-age=86400"
+		root * /srv
+		file_server
+	}
+
+	# Todo lo demás → Next.js.
+	handle {
+		reverse_proxy frontend:3000
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+}

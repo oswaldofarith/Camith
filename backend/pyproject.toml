@@ -1,0 +1,50 @@
+[project]
+name = "camith-backend"
+version = "0.1.0"
+description = "API y gestión de usuarios de AMI-FieldWorkManager (Django + PostgreSQL/PostGIS)"
+requires-python = ">=3.11"
+dependencies = [
+    "django>=5.2,<5.3",
+    "django-environ>=0.12",
+    "django-ninja>=1.4",
+    "django-allauth[headless]>=65.9",
+    "django-solo>=2.4",
+    "psycopg[binary]>=3.2",
+    "pillow>=11.0",
+    "celery[redis]>=5.5",
+    "gunicorn>=23.0",
+    "whitenoise>=6.9",
+    "email-validator>=2.2",
+    "ortools>=9.12",
+    "httpx>=0.28",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-django>=4.11",
+    "ruff>=0.11",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py"]
+addopts = "--reuse-db -q"
+filterwarnings = ["ignore:No directory at:UserWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["**/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DJ"]
+# El formateador ya controla el largo de línea; solo quedan cadenas largas.
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+# Idioma de Django Ninja para parámetros de consulta.
+extend-immutable-calls = ["ninja.Query"]
