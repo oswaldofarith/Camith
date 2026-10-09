@@ -6,7 +6,9 @@
 # - Coolify genera la clave de Django y la contraseña de PostgreSQL
 #   (SERVICE_BASE64_64_DJANGO, SERVICE_PASSWORD_POSTGRES) y deriva los hosts
 #   permitidos y la URL pública del dominio de «web» (SERVICE_FQDN_WEB/SERVICE_URL_WEB).
-# - Los datos de mapas viven fuera del repositorio, en MAPAS_DIR del servidor.
+# - Los datos de mapas viven fuera del repositorio, en /data/camith/mapas del
+#   servidor. Ruta fija: Coolify no admite ${VAR:-…}/subcarpeta como origen de
+#   un volumen (separa mal por los dos puntos).
 # - OSRM siempre está definido; sin datos espera sin hacer nada.
 #
 # Sin anclas YAML (&/<<) a propósito: Coolify reescribe el archivo al procesarlo.
@@ -124,10 +126,10 @@ services:
         if [ -f /data/guayaquil.osrm.mldgr ]; then
           exec osrm-routed --algorithm mld --max-table-size 500 /data/guayaquil.osrm
         fi
-        echo "Sin datos de rutas en MAPAS_DIR/osrm: ejecuta deploy/mapas/preparar.sh"
+        echo "Sin datos de rutas en /data/camith/mapas/osrm: ejecuta deploy/mapas/preparar.sh"
         exec sleep infinity
     volumes:
-      - ${MAPAS_DIR:-/data/camith/mapas}/osrm:/data:ro
+      - /data/camith/mapas/osrm:/data:ro
 
   frontend:
     build: ./frontend
@@ -153,7 +155,7 @@ services:
       - TRUSTED_PROXIES=private_ranges
     volumes:
       - media:/srv/media:ro
-      - ${MAPAS_DIR:-/data/camith/mapas}/publico:/srv/mapas:ro
+      - /data/camith/mapas/publico:/srv/mapas:ro
     depends_on:
       backend:
         condition: service_healthy
