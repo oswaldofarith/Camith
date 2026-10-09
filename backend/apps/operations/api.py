@@ -122,7 +122,7 @@ def cancelar_solicitud(request, solicitud_id: int, payload: MotivoIn):
 def borrar_solicitud(request, solicitud_id: int):
     """Falla con 409 si la solicitud ya forma parte de una orden de trabajo."""
     exigir_permiso(request, "operations.delete_solicitud")
-    get_object_or_404(Solicitud, pk=solicitud_id).delete()
+    services.borrar_solicitud(get_object_or_404(Solicitud, pk=solicitud_id))
     return Status(204, None)
 
 

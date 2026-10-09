@@ -147,3 +147,27 @@ def test_csrf_obligatorio_con_sesion(crear_usuario):
     cliente.force_login(crear_usuario())
     resp = cliente.patch("/api/accounts/me", {"nombre": "X"}, content_type=JSON)
     assert resp.status_code == 403
+
+
+def test_superusuario_sin_grupo_es_administrador(client):
+    su = User.objects.create_superuser("su@example.com", "clave-segura-123", nombre="SU")
+    client.force_login(su)
+    assert client.get("/api/accounts/me").json()["perfiles"] == [Rol.ADMINISTRADOR]
+
+
+def test_password_temporal_bloquea_la_api_hasta_cambiarla(client, crear_usuario):
+    usuario = crear_usuario(rol=Rol.SUPERVISOR)
+    User.objects.filter(pk=usuario.pk).update(debe_cambiar_password=True)
+    client.force_login(usuario)
+
+    resp = client.get("/api/equipos")
+    assert resp.status_code == 403 and "contraseña temporal" in resp.json()["detail"]
+    assert client.get("/api/accounts/me").json()["debe_cambiar_password"] is True
+
+    resp = client.post(
+        "/api/auth/browser/v1/account/password/change",
+        {"current_password": "clave-segura-123", "new_password": "Otra-clave-segura-2026"},
+        content_type=JSON,
+    )
+    assert resp.status_code == 200, resp.content
+    assert client.get("/api/equipos").status_code == 200

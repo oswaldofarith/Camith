@@ -8,6 +8,7 @@ x-backend: &backend
   environment:
     DATABASE_URL: postgis://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     REDIS_URL: redis://redis:6379/0
+    CACHE_URL: redis://redis:6379/1
     # Si el servicio osrm no está levantado, el backend estima los tiempos.
     OSRM_URL: http://osrm:5000
   depends_on:
@@ -53,25 +54,6 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
-
-  worker:
-    <<: *backend
-    command: ["celery", "-A", "config", "worker", "--loglevel", "info"]
-    environment:
-      DATABASE_URL: postgis://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      REDIS_URL: redis://redis:6379/0
-      OSRM_URL: http://osrm:5000
-      RUN_MIGRATIONS: "0"
-    volumes:
-      - media:/data/media
-
-  beat:
-    <<: *backend
-    command: ["celery", "-A", "config", "beat", "--loglevel", "info", "--schedule", "/tmp/celerybeat-schedule"]
-    environment:
-      DATABASE_URL: postgis://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      REDIS_URL: redis://redis:6379/0
-      RUN_MIGRATIONS: "0"
 
   # Motor de rutas (calles de OpenStreetMap). Requiere ejecutar antes
   # deploy/mapas/preparar.sh y se levanta con: docker compose --profile mapas up -d

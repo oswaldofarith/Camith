@@ -10,6 +10,7 @@
 #   servidor. Ruta fija: Coolify no admite ${VAR:-…}/subcarpeta como origen de
 #   un volumen (separa mal por los dos puntos).
 # - OSRM siempre está definido; sin datos espera sin hacer nada.
+# - Sin worker ni beat de Celery: no hay tareas en segundo plano (ver settings.py).
 #
 # Sin anclas YAML (&/<<) a propósito: Coolify reescribe el archivo al procesarlo.
 
@@ -45,6 +46,7 @@ services:
     environment:
       DATABASE_URL: postgis://${POSTGRES_USER:-camith}:${SERVICE_PASSWORD_POSTGRES}@db:5432/${POSTGRES_DB:-camith}
       REDIS_URL: redis://redis:6379/0
+      CACHE_URL: redis://redis:6379/1
       OSRM_URL: http://osrm:5000
       DJANGO_SECRET_KEY: ${SERVICE_BASE64_64_DJANGO}
       DJANGO_ALLOWED_HOSTS: ${SERVICE_FQDN_WEB},backend,localhost
@@ -71,47 +73,6 @@ services:
       timeout: 5s
       retries: 10
       start_period: 60s
-
-  worker:
-    build: ./backend
-    restart: unless-stopped
-    command: ["celery", "-A", "config", "worker", "--loglevel", "info"]
-    environment:
-      RUN_MIGRATIONS: "0"
-      DATABASE_URL: postgis://${POSTGRES_USER:-camith}:${SERVICE_PASSWORD_POSTGRES}@db:5432/${POSTGRES_DB:-camith}
-      REDIS_URL: redis://redis:6379/0
-      OSRM_URL: http://osrm:5000
-      DJANGO_SECRET_KEY: ${SERVICE_BASE64_64_DJANGO}
-      DJANGO_ALLOWED_HOSTS: ${SERVICE_FQDN_WEB},backend,localhost
-      FRONTEND_URL: ${SERVICE_URL_WEB}
-      TIME_ZONE: ${TIME_ZONE:-America/Guayaquil}
-      EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
-      EMAIL_HOST: ${EMAIL_HOST:?}
-      EMAIL_PORT: ${EMAIL_PORT:-587}
-      EMAIL_USE_TLS: ${EMAIL_USE_TLS:-true}
-      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
-      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:?}
-    volumes:
-      - media:/data/media
-    depends_on:
-      backend:
-        condition: service_healthy
-
-  beat:
-    build: ./backend
-    restart: unless-stopped
-    command: ["celery", "-A", "config", "beat", "--loglevel", "info", "--schedule", "/tmp/celerybeat-schedule"]
-    environment:
-      RUN_MIGRATIONS: "0"
-      DATABASE_URL: postgis://${POSTGRES_USER:-camith}:${SERVICE_PASSWORD_POSTGRES}@db:5432/${POSTGRES_DB:-camith}
-      REDIS_URL: redis://redis:6379/0
-      DJANGO_SECRET_KEY: ${SERVICE_BASE64_64_DJANGO}
-      DJANGO_ALLOWED_HOSTS: ${SERVICE_FQDN_WEB},backend,localhost
-      TIME_ZONE: ${TIME_ZONE:-America/Guayaquil}
-    depends_on:
-      backend:
-        condition: service_healthy
 
   # Motor de rutas. Los datos se preparan en el servidor con
   #   sudo DATOS=/data/camith/mapas ./deploy/mapas/preparar.sh

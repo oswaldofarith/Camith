@@ -31,4 +31,6 @@ ENV STATIC_ROOT=/data/static \
 
 EXPOSE 8000
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--access-logfile", "-"]
+# 120 s: el optimizador de rutas puede pensar hasta 60 s (tiempo_limite_s) y antes
+# consulta OSRM; con los 30 s por defecto Gunicorn cortaba la petición (502).
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "--access-logfile", "-"]
