@@ -64,6 +64,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "apps.accounts.middleware.PasswordTemporalMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -126,6 +127,9 @@ HEADLESS_FRONTEND_URLS = {
 }
 
 SESSION_COOKIE_AGE = env.int("SESSION_COOKIE_AGE", default=60 * 60 * 12)
+# La sesión caduca tras SESSION_COOKIE_AGE sin actividad, no a las 12 h de entrar:
+# así no se cierra a mitad de jornada ni en la pantalla del NOC, que se refresca sola.
+SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 
@@ -163,7 +167,16 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="AMI-FieldWorkManager <no-reply@localhost>")
 
+# --- Caché --------------------------------------------------------------------
+# En producción, Redis (CACHE_URL=redis://redis:6379/1 en el compose): la comparten
+# los procesos de Gunicorn (límite de intentos de login, trazados de rutas). En
+# tests y en desarrollo, memoria local.
+CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
+
 # --- Celery -------------------------------------------------------------------
+# Configurado pero sin tareas ni worker en el compose. Para añadir tareas en
+# segundo plano, definirlas en tasks.py y volver a añadir los servicios worker/beat
+# (celery -A config worker / beat) con RUN_MIGRATIONS=0.
 CELERY_BROKER_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_TIMEZONE = TIME_ZONE

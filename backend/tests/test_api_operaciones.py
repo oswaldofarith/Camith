@@ -1,7 +1,9 @@
 import io
 from datetime import UTC, datetime
+from importlib import import_module
 
 import pytest
+from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from PIL import Image
 
@@ -10,7 +12,8 @@ from apps.accounts.roles import Rol
 from apps.assets.models import Equipo
 from apps.catalogs.models import TipoTrabajo
 from apps.notifications.models import Notificacion
-from apps.operations.models import OrdenDeTrabajo, Solicitud, Trabajo
+from apps.operations import services
+from apps.operations.models import MantenimientoProgramado, OrdenDeTrabajo, Solicitud, Trabajo
 
 pytestmark = pytest.mark.django_db
 JSON = "application/json"
@@ -483,3 +486,133 @@ def test_recalcular_revisiones(actores, orden, equipo):
     assert "ya estaban al día" in salida.getvalue()
     equipo.refresh_from_db()
     assert (equipo.revision_count, equipo.fecha_ultima_revision) == (9, historial)
+
+
+def _plan_con_mantenimientos(cliente, equipo, n):
+    resp = cliente.post(
+        "/api/planes-mantenimiento",
+        {
+            "nombre": "Plan 2026",
+            "tiempo_de_ejecucion_dias": 30,
+            "calendario": [
+                {"equipo": equipo.codigo, "fecha_programada": f"2026-11-0{i + 1}"} for i in range(n)
+            ],
+        },
+        content_type=JSON,
+    )
+    assert resp.status_code == 201, resp.content
+    return resp.json()["id"]
+
+
+def test_calendario_del_plan_sigue_a_sus_solicitudes(actores, equipo, vehiculo):
+    supervisor, M = actores["supervisor"], MantenimientoProgramado.Estado
+    plan_id = _plan_con_mantenimientos(supervisor, equipo, 3)
+    supervisor.post(
+        f"/api/planes-mantenimiento/{plan_id}/generar-solicitudes", {}, content_type=JSON
+    )
+    a, b, c = MantenimientoProgramado.objects.filter(plan_id=plan_id).order_by("fecha_programada")
+    resp = supervisor.post(
+        "/api/ordenes",
+        [
+            {
+                "unidades": [
+                    {"vehiculo": vehiculo.codigo, "tecnicos": [actores["tecnico"].user.pk]}
+                ],
+                "solicitudes": [a.solicitud_id, b.solicitud_id],
+            }
+        ],
+        content_type=JSON,
+    )
+    trabajo_a, trabajo_b = resp.json()[0]["trabajos"]
+
+    def estado(item):
+        item.refresh_from_db()
+        return item.estado, item.solicitud_id
+
+    # Completar el trabajo completa el mantenimiento; revertirlo lo deshace.
+    actores["tecnico"].post(
+        f"/api/trabajos/{trabajo_a['id']}/reportar", {"estado": "Completado"}, content_type=JSON
+    )
+    assert estado(a)[0] == M.COMPLETADO_OT
+    actores["ingeniero"].post(
+        f"/api/trabajos/{trabajo_a['id']}/revisar", {"estado": "Pendiente"}, content_type=JSON
+    )
+    assert estado(a)[0] == M.SOLICITUD_CREADA
+
+    # Cancelar o borrar la solicitud deja el mantenimiento listo para pedirlo otra vez.
+    supervisor.post(
+        f"/api/trabajos/{trabajo_b['id']}/cancelar", {"motivo": "Sin acceso"}, content_type=JSON
+    )
+    assert estado(b) == (M.PROGRAMADO, None)
+    assert supervisor.delete(f"/api/solicitudes/{c.solicitud_id}").status_code == 204
+    assert estado(c) == (M.PROGRAMADO, None)
+    resp = supervisor.post(
+        f"/api/planes-mantenimiento/{plan_id}/generar-solicitudes", {}, content_type=JSON
+    )
+    assert resp.json()["creadas"] == 2
+
+
+def test_generar_solicitudes_informa_errores_y_sigue(actores, equipo, monkeypatch):
+    supervisor = actores["supervisor"]
+    plan_id = _plan_con_mantenimientos(supervisor, equipo, 2)
+    url = f"/api/planes-mantenimiento/{plan_id}/generar-solicitudes"
+
+    resp = supervisor.post(url, {"urgencia": "marte"}, content_type=JSON)
+    assert resp.status_code == 400 and "marte" in resp.json()["detail"]
+
+    original, llamadas = services.crear_solicitud, []
+
+    def falla_la_primera(datos, usuario):
+        llamadas.append(datos)
+        if len(llamadas) == 1:
+            raise ValidationError("El equipo no admite ese trabajo.")
+        return original(datos, usuario)
+
+    monkeypatch.setattr(services, "crear_solicitud", falla_la_primera)
+    resp = supervisor.post(url, {}, content_type=JSON).json()
+    assert resp == {"creadas": 1, "errores": ["COL-001: El equipo no admite ese trabajo."]}
+    estados = MantenimientoProgramado.objects.filter(plan_id=plan_id).values_list(
+        "estado", flat=True
+    )
+    assert sorted(estados) == ["programado", "solicitud_creada"]
+
+
+def test_migracion_sincroniza_calendarios_existentes(supervisor, equipo, crear_solicitud):
+    from django.apps import apps
+
+    migracion = import_module("apps.operations.migrations.0003_sincronizar_calendario_planes")
+    plan = services.crear_plan(
+        {
+            "nombre": "Plan",
+            "tiempo_de_ejecucion_dias": 30,
+            "calendario": [
+                {"equipo": equipo.codigo, "fecha_programada": f"2026-11-0{i}"} for i in (1, 2, 3)
+            ],
+        },
+        supervisor,
+    )
+    items = list(plan.calendario.order_by("fecha_programada"))
+    for item, estado in zip(items, ["completada", "cancelada", "pendiente"], strict=True):
+        item.solicitud = crear_solicitud(estado=estado)
+        item.estado = "solicitud_creada"
+        item.save()
+    migracion.sincronizar(apps, None)
+    for item in items:
+        item.refresh_from_db()
+    assert [(i.estado, i.solicitud_id is None) for i in items] == [
+        ("completado_ot", False),
+        ("programado", True),
+        ("solicitud_creada", False),
+    ]
+
+
+def test_revertir_el_unico_trabajo_completado_borra_la_fecha(actores, orden, equipo):
+    trabajo = orden["trabajos"][0]
+    actores["tecnico"].post(
+        f"/api/trabajos/{trabajo['id']}/reportar", {"estado": "Completado"}, content_type=JSON
+    )
+    actores["ingeniero"].post(
+        f"/api/trabajos/{trabajo['id']}/revisar", {"estado": "Pendiente"}, content_type=JSON
+    )
+    equipo.refresh_from_db()
+    assert (equipo.revision_count, equipo.fecha_ultima_revision) == (0, None)

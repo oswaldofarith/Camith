@@ -27,7 +27,7 @@ legacy/firebase/  Reglas de Firestore (referencia) y exportador de datos para la
           │                        │                          │
    Django + Gunicorn  ◄── forward_auth ──┘               Next.js (standalone)
           │
-   PostgreSQL 17 + PostGIS · Redis · Celery (worker + beat)
+   PostgreSQL 17 + PostGIS · Redis (caché compartida)
 ```
 
 Frontend y API comparten dominio: la autenticación usa la **cookie de sesión de
@@ -181,7 +181,7 @@ que convive con los demás servicios del servidor.
    contraseña?”. No cambiar `SERVICE_PASSWORD_POSTGRES` después del primer
    despliegue (la base ya se creó con ella).
 4. **Deploy.** El primer build tarda unos minutos. Todos los servicios quedan
-   *healthy* salvo `worker`, `beat` y `osrm`, que no tienen healthcheck.
+   *healthy* salvo `osrm`, que no tiene healthcheck.
    Migraciones, roles y estáticos se aplican al arrancar `backend`.
 5. **Mapas y rutas** (opcional; sin ellos la app funciona con fondo liso y
    tiempos estimados). Por SSH en el servidor, con el repositorio clonado en

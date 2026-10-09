@@ -129,6 +129,7 @@ def cancelar_solicitud(solicitud: Solicitud, motivo: str, usuario) -> Solicitud:
         solicitud.estado = S.CANCELADA
         solicitud.motivo_cancelacion = motivo
         solicitud.save(update_fields=["estado", "motivo_cancelacion", "actualizado_en"])
+    _sincronizar_plan(solicitud)
     notificar(
         [solicitud.creado_por],
         f"Tu solicitud {solicitud.display_id} fue cancelada por {usuario.nombre}. Motivo: {motivo}",
@@ -138,6 +139,16 @@ def cancelar_solicitud(solicitud: Solicitud, motivo: str, usuario) -> Solicitud:
         entidad_url="/requests",
     )
     return solicitud
+
+
+@transaction.atomic
+def borrar_solicitud(solicitud: Solicitud) -> None:
+    """Falla (ProtectedError) si ya está en una orden. Su mantenimiento programado,
+    si lo tiene, vuelve a quedar pendiente de pedir."""
+    MantenimientoProgramado.objects.filter(solicitud=solicitud).update(
+        estado=MantenimientoProgramado.Estado.PROGRAMADO, solicitud=None
+    )
+    solicitud.delete()
 
 
 # --- Órdenes de trabajo -----------------------------------------------------------
@@ -287,7 +298,7 @@ def cambiar_trabajo(
 
     if trabajo.estado != original.estado:
         _sincronizar_solicitud(trabajo)
-        _actualizar_revisiones_equipo(trabajo, original.estado)
+        _actualizar_revisiones_equipo(trabajo, original)
     trabajo.orden.recalcular_estado()
     _notificar_cambio_trabajo(trabajo, original, usuario, observacion is not _NO_ENVIADO)
     return trabajo
@@ -311,21 +322,42 @@ def _sincronizar_solicitud(trabajo: Trabajo) -> None:
     elif trabajo.estado == T.PENDIENTE and solicitud.estado != S.PENDIENTE:
         solicitud.estado = S.ASIGNADA
     solicitud.save(update_fields=["estado", "motivo_cancelacion", "actualizado_en"])
+    _sincronizar_plan(solicitud)
 
 
-def _actualizar_revisiones_equipo(trabajo: Trabajo, estado_anterior: str) -> None:
+def _sincronizar_plan(solicitud: Solicitud) -> None:
+    """El mantenimiento programado que generó la solicitud refleja su avance.
+
+    Si la solicitud se cancela, el mantenimiento vuelve a quedar programado y sin
+    solicitud, para poder pedirlo otra vez desde el plan.
+    """
+    M = MantenimientoProgramado.Estado
+    items = MantenimientoProgramado.objects.filter(solicitud=solicitud)
+    if solicitud.estado == S.COMPLETADA:
+        items.update(estado=M.COMPLETADO_OT)
+    elif solicitud.estado == S.CANCELADA:
+        items.update(estado=M.PROGRAMADO, solicitud=None)
+    else:
+        items.update(estado=M.SOLICITUD_CREADA)
+
+
+def _actualizar_revisiones_equipo(trabajo: Trabajo, original: Trabajo) -> None:
     """Cada trabajo completado cuenta como una revisión del equipo."""
     equipo = Equipo.objects.select_for_update().get(pk=trabajo.equipo_id)
     if trabajo.estado == T.COMPLETADO:
         equipo.revision_count = F("revision_count") + 1
         equipo.fecha_ultima_revision = trabajo.fecha_finalizacion
-    elif estado_anterior == T.COMPLETADO:
+    elif original.estado == T.COMPLETADO:
         equipo.revision_count = F("revision_count") - 1 if equipo.revision_count > 0 else 0
         ultima = Trabajo.objects.filter(equipo=equipo, estado=T.COMPLETADO).aggregate(
             m=Max("fecha_finalizacion")
         )["m"]
         if ultima:
             equipo.fecha_ultima_revision = ultima
+        elif equipo.fecha_ultima_revision == original.fecha_finalizacion:
+            # La fecha venía de este trabajo y no queda otro completado. (Si era
+            # anterior, p. ej. cargada por Excel, se conserva.)
+            equipo.fecha_ultima_revision = None
     else:
         return
     equipo.save(update_fields=["revision_count", "fecha_ultima_revision", "actualizado_en"])
@@ -504,7 +536,11 @@ def generar_solicitudes_plan(
     nombre_tipo_trabajo: str,
     urgencia: str,
 ) -> tuple[int, list[str]]:
-    """Crea una solicitud por cada mantenimiento programado aún sin solicitud."""
+    """Crea una solicitud por cada mantenimiento programado aún sin solicitud.
+
+    Si una falla (p. ej., el equipo ya no admite ese tipo de trabajo), se informa y
+    se sigue con las demás."""
+    _obtener(Urgencia, valor=urgencia)  # un valor inválido haría fallar a todas
     qs = (
         plan.calendario.select_for_update()
         .select_related("equipo")
@@ -514,31 +550,36 @@ def generar_solicitudes_plan(
         qs = qs.filter(pk__in=items)
     creadas, errores = 0, []
     for item in qs:
-        # Se crea la primera vez para cada tipo de equipo (p. ej., "Mantenimiento
-        # preventivo" en Colector, Medidor...), con la duración por defecto.
-        tipo = TipoTrabajo.objects.filter(
-            tipo_equipo_id=item.equipo.tipo_id, nombre__iexact=nombre_tipo_trabajo
-        ).first() or TipoTrabajo.objects.create(
-            tipo_equipo_id=item.equipo.tipo_id,
-            nombre=nombre_tipo_trabajo,
-            tiempo_estimado_minutos=MINUTOS_MANTENIMIENTO_POR_DEFECTO,
-        )
-        solicitud = crear_solicitud(
-            {
-                "equipo": item.equipo.codigo,
-                "tipo_trabajo_id": tipo.pk,
-                "urgencia": urgencia,
-                "fecha_programada": item.fecha_programada,
-                "descripcion": (
-                    f"Mantenimiento preventivo programado desde el plan '{plan.nombre}'. "
-                    f"Motivo: {item.motivo_prioridad}"
-                ),
-            },
-            usuario,
-        )
-        item.solicitud = solicitud
-        item.estado = MantenimientoProgramado.Estado.SOLICITUD_CREADA
-        item.save(update_fields=["solicitud", "estado"])
+        try:
+            with transaction.atomic():
+                # Se crea la primera vez para cada tipo de equipo (p. ej., "Mantenimiento
+                # preventivo" en Colector, Medidor...), con la duración por defecto.
+                tipo = TipoTrabajo.objects.filter(
+                    tipo_equipo_id=item.equipo.tipo_id, nombre__iexact=nombre_tipo_trabajo
+                ).first() or TipoTrabajo.objects.create(
+                    tipo_equipo_id=item.equipo.tipo_id,
+                    nombre=nombre_tipo_trabajo,
+                    tiempo_estimado_minutos=MINUTOS_MANTENIMIENTO_POR_DEFECTO,
+                )
+                solicitud = crear_solicitud(
+                    {
+                        "equipo": item.equipo.codigo,
+                        "tipo_trabajo_id": tipo.pk,
+                        "urgencia": urgencia,
+                        "fecha_programada": item.fecha_programada,
+                        "descripcion": (
+                            f"Mantenimiento preventivo programado desde el plan '{plan.nombre}'. "
+                            f"Motivo: {item.motivo_prioridad}"
+                        ),
+                    },
+                    usuario,
+                )
+                item.solicitud = solicitud
+                item.estado = MantenimientoProgramado.Estado.SOLICITUD_CREADA
+                item.save(update_fields=["solicitud", "estado"])
+        except ValidationError as error:
+            errores.append(f"{item.equipo.codigo}: {'; '.join(error.messages)}")
+            continue
         creadas += 1
     return creadas, errores
 

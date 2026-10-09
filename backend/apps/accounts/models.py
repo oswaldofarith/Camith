@@ -99,9 +99,16 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def perfiles(self) -> list[str]:
-        """Roles del usuario con los mismos valores que usaba Firestore."""
+        """Roles del usuario con los mismos valores que usaba Firestore.
+
+        Un superusuario es administrador aunque no esté en el grupo (p. ej., uno
+        creado con `createsuperuser`): así lo trata `has_role` y así lo ve el frontend.
+        """
         validos = set(Rol.values)
-        return sorted(g.name for g in self.groups.all() if g.name in validos)
+        perfiles = {g.name for g in self.groups.all() if g.name in validos}
+        if self.is_superuser:
+            perfiles.add(Rol.ADMINISTRADOR.value)
+        return sorted(perfiles)
 
     def has_role(self, *roles: str) -> bool:
         if self.is_superuser and Rol.ADMINISTRADOR in roles:
