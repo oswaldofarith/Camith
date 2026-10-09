@@ -18,7 +18,7 @@ BBOX="${BBOX:--80.55,-2.80,-79.70,-1.95}"
 OSRM_IMAGEN="${OSRM_IMAGEN:-ghcr.io/project-osrm/osrm-backend:v5.27.1}"
 MAX_ZOOM="${MAX_ZOOM:-15}"
 
-# DATOS cambia la carpeta de destino (en Coolify: la de MAPAS_DIR).
+# DATOS cambia la carpeta de destino (en Coolify: /data/camith/mapas).
 RAIZ="${DATOS:-$(cd "$(dirname "$0")" && pwd)/datos}"
 TMP="$RAIZ/tmp"
 OSRM="$RAIZ/osrm"

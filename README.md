@@ -176,7 +176,6 @@ que convive con los demás servicios del servidor.
    | `DEFAULT_FROM_EMAIL` | sí | `AMI-FieldWorkManager <no-reply@tudominio.com>` |
    | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | según el SMTP | |
    | `EMAIL_PORT`, `EMAIL_USE_TLS` | no (`587`, `true`) | |
-   | `MAPAS_DIR` | no (`/data/camith/mapas`) | carpeta del servidor con los mapas |
    | `POSTGRES_DB`, `POSTGRES_USER`, `TIME_ZONE` | no | |
 
    El correo es imprescindible: los usuarios migrados entran con “¿Olvidaste tu
@@ -193,7 +192,7 @@ que convive con los demás servicios del servidor.
    sudo DATOS=/data/camith/mapas ./deploy/mapas/preparar.sh
    ```
    Luego, en Coolify, reiniciar los servicios `osrm` y `web` (o redesplegar).
-   Si se usa otra carpeta, poner la misma en `MAPAS_DIR`.
+   La carpeta `/data/camith/mapas` está fija en `compose.coolify.yaml`.
 
 Para comandos dentro de los contenedores, Coolify ofrece **Terminal** en la
 aplicación. Por SSH, los contenedores se llaman `<servicio>-<uuid>`, donde
