@@ -1282,11 +1282,6 @@ export interface components {
             hora_inicio_almuerzo?: string | null;
             /** Hora Fin Almuerzo */
             hora_fin_almuerzo?: string | null;
-            /**
-             * Zona Horaria
-             * @default America/Guayaquil
-             */
-            zona_horaria: string;
         };
         /** ItemOut */
         ItemOut: {

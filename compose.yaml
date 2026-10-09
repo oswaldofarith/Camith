@@ -9,6 +9,8 @@ x-backend: &backend
     DATABASE_URL: postgis://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     REDIS_URL: redis://redis:6379/0
     CACHE_URL: redis://redis:6379/1
+    # Caddy: para que el límite de intentos de login sea por cliente.
+    TRUSTED_PROXY_COUNT: "1"
     # Si el servicio osrm no está levantado, el backend estima los tiempos.
     OSRM_URL: http://osrm:5000
   depends_on:

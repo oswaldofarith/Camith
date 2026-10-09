@@ -177,6 +177,10 @@ que convive con los demás servicios del servidor.
    | `EMAIL_PORT`, `EMAIL_USE_TLS` | no (`587`, `true`) | |
    | `POSTGRES_DB`, `POSTGRES_USER`, `TIME_ZONE` | no | |
 
+   `TRUSTED_PROXY_COUNT` (fija en el compose, `2`: Traefik y Caddy) permite que
+   el límite de intentos de login sea por cliente; si se pone otro proxy delante
+   (p. ej., Cloudflare), hay que sumarlo.
+
    El correo es imprescindible: los usuarios migrados entran con “¿Olvidaste tu
    contraseña?”. No cambiar `SERVICE_PASSWORD_POSTGRES` después del primer
    despliegue (la base ya se creó con ella).

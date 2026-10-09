@@ -140,3 +140,17 @@ def test_rutas_del_dia(como, sede, flota, solicitudes, supervisor):
     assert ruta["placas"] == ["P-P1"]
     assert [t["secuencia"] for t in ruta["trabajos"]] == [1, 2]
     assert len(ruta["geometria"]) == 4  # sede → 2 trabajos → sede (sin OSRM: tramos rectos)
+
+
+def test_trazado_en_linea_recta_no_se_guarda_en_cache(settings):
+    from django.core.cache import cache
+
+    from apps.routing import api as rutas
+
+    settings.OSRM_URL = ""  # sin OSRM: línea recta
+    puntos = [(-2.17, -79.92), (-2.18, -79.93)]
+    assert rutas._geometria(puntos) == [[-79.92, -2.17], [-79.93, -2.18]]
+    assert (
+        cache.get("ruta:" + rutas.hashlib.sha1(rutas.json.dumps(puntos).encode()).hexdigest())
+        is None
+    )

@@ -11,7 +11,7 @@ def test_catalogos_completos(como, tipo_trabajo):
     assert [m["valor"] for m in datos["marcas"]] == ["honeywell", "itron", "trilliant"]
     colector = next(t for t in datos["tipos_equipo"] if t["valor"] == "colector")
     assert colector["tipos_trabajo"][0]["nombre"] == "Revisión"
-    assert datos["configuracion"]["zona_horaria"] == "America/Guayaquil"
+    assert "zona_horaria" not in datos["configuracion"]  # manda TIME_ZONE
 
 
 def test_solo_admin_edita_catalogos(como):
@@ -68,3 +68,20 @@ def test_configuracion_y_tipos_trabajo(como):
         content_type=JSON,
     )
     assert resp.status_code == 201 and resp.json()["lat"] == -1.86
+
+
+def test_coordenadas_fuera_de_rango(como):
+    admin = como(Rol.ADMINISTRADOR)
+    # Como las localidades de Firebase guardadas sin punto decimal.
+    resp = admin.post(
+        "/api/catalogos/localidades",
+        {"nombre": "Planta", "lat": -2.14, "lng": -799114261149843},
+        content_type=JSON,
+    )
+    assert resp.status_code == 422
+    resp = admin.put(
+        "/api/catalogos/configuracion",
+        {"sede_central": {"lat": 120, "lng": -79.9}},
+        content_type=JSON,
+    )
+    assert resp.status_code == 422

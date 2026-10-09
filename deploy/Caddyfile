@@ -13,6 +13,12 @@
 {$DOMAIN} {
 	encode zstd gzip
 
+	# Tope de subida: fotos (el navegador las comprime a ~1 MB; máx. 5 por envío)
+	# e importaciones por lote. Django vuelve a validar cada foto (10 MB).
+	request_body {
+		max_size 30MB
+	}
+
 	# API, autenticación, admin y estáticos del admin → Django.
 	@django path /api/* /admin/* /static/*
 	handle @django {

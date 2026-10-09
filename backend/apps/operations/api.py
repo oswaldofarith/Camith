@@ -469,8 +469,9 @@ def tendencias(request, dias: int = 14):
         }
         for i in range(dias)
     }
+    # Hasta hoy: una orden con fecha futura no tiene casilla en la serie.
     ordenes = (
-        OrdenDeTrabajo.objects.filter(fecha_creacion__date__gte=desde)
+        OrdenDeTrabajo.objects.filter(fecha_creacion__date__range=(desde, hoy))
         .annotate(dia=TruncDate("fecha_creacion"))
         .values("dia")
         .annotate(n=Count("id"))
@@ -484,7 +485,7 @@ def tendencias(request, dias: int = 14):
         T.CANCELADO: "cancelados",
     }
     trabajos = (
-        Trabajo.objects.filter(orden__fecha_creacion__date__gte=desde)
+        Trabajo.objects.filter(orden__fecha_creacion__date__range=(desde, hoy))
         .annotate(dia=TruncDate("orden__fecha_creacion"))
         .values("dia", "estado")
         .annotate(n=Count("id"))

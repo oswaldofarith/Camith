@@ -102,7 +102,6 @@ export function ConfiguracionGeneral({ inicial }: { inicial: Configuracion }) {
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
             {JORNADA.map(campo)}
-            {campo({ campo: "zona_horaria", etiqueta: "Zona horaria" })}
           </CardContent>
           <CardFooter className="justify-end">
             <Button type="submit" disabled={guardar.isPending}>

@@ -616,3 +616,21 @@ def test_revertir_el_unico_trabajo_completado_borra_la_fecha(actores, orden, equ
     )
     equipo.refresh_from_db()
     assert (equipo.revision_count, equipo.fecha_ultima_revision) == (0, None)
+
+
+def test_foto_demasiado_grande(actores, orden, settings, tmp_path):
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    settings.MEDIA_ROOT = tmp_path
+    grande = SimpleUploadedFile("enorme.jpg", b"0" * (services.MAX_MB_POR_FOTO * 1024 * 1024 + 1))
+    resp = actores["tecnico"].post(
+        f"/api/trabajos/{orden['trabajos'][0]['id']}/fotos", {"fotos": [grande]}
+    )
+    assert resp.status_code == 400 and "10 MB" in resp.json()["detail"]
+
+
+def test_tendencias_ignoran_ordenes_futuras(actores, orden):
+    OrdenDeTrabajo.objects.filter(pk=orden["id"]).update(
+        fecha_creacion=datetime(2099, 1, 1, tzinfo=UTC)
+    )
+    assert actores["supervisor"].get("/api/dashboard/tendencias").status_code == 200

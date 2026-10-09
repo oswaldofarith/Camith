@@ -135,3 +135,8 @@ def test_vehiculos_crud(como):
     assert resp.json()["estado"] == "enMantenimiento"
     assert supervisor.get("/api/vehiculos?estado=enMantenimiento").json()[0]["codigo"] == "V-9"
     assert supervisor.delete("/api/vehiculos/V-9").status_code == 204
+
+
+def test_bbox_mal_formado_es_400(como):
+    resp = como(Rol.TECNICO_DE_CAMPO).get("/api/equipos", {"bbox": "1,2"})
+    assert resp.status_code == 400 and "bbox" in resp.json()["detail"]

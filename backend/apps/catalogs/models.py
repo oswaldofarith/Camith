@@ -120,7 +120,6 @@ class Configuracion(SingletonModel):
     minutos_almuerzo = models.PositiveIntegerField(default=60)
     hora_inicio_almuerzo = models.TimeField(null=True, blank=True)
     hora_fin_almuerzo = models.TimeField(null=True, blank=True)
-    zona_horaria = models.CharField(max_length=64, default="America/Guayaquil")
 
     class Meta:
         verbose_name = "configuración general"

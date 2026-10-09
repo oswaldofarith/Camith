@@ -33,6 +33,8 @@ S = Solicitud.Estado
 N = Notificacion.Tipo
 
 MAX_FOTOS_POR_TRABAJO = 5
+# El navegador las comprime a ~1 MB; el límite protege el disco de otros clientes.
+MAX_MB_POR_FOTO = 10
 # Duración del tipo de trabajo de mantenimiento cuando la API lo crea sola
 # (el mismo valor por defecto que usaba el frontend para las solicitudes).
 MINUTOS_MANTENIMIENTO_POR_DEFECTO = 60
@@ -460,6 +462,8 @@ def agregar_fotos(trabajo: Trabajo, archivos: list, usuario) -> list[TrabajoFoto
     trabajo = Trabajo.objects.select_for_update().get(pk=trabajo.pk)
     if trabajo.fotos.count() + len(archivos) > MAX_FOTOS_POR_TRABAJO:
         raise ValidationError(f"Máximo {MAX_FOTOS_POR_TRABAJO} fotos por trabajo.")
+    if any(a.size > MAX_MB_POR_FOTO * 1024 * 1024 for a in archivos):
+        raise ValidationError(f"Cada foto puede pesar como máximo {MAX_MB_POR_FOTO} MB.")
     fotos = []
     for archivo in archivos:
         foto = TrabajoFoto(trabajo=trabajo, imagen=archivo, subida_por=usuario)

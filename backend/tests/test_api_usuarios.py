@@ -171,3 +171,48 @@ def test_password_temporal_bloquea_la_api_hasta_cambiarla(client, crear_usuario)
     )
     assert resp.status_code == 200, resp.content
     assert client.get("/api/equipos").status_code == 200
+
+
+def test_null_en_campos_obligatorios_no_los_cambia(como, crear_usuario):
+    usuario = crear_usuario(email="otro@example.com", cedula="0912345678")
+    resp = como(Rol.ADMINISTRADOR).patch(
+        f"{URL}/{usuario.pk}", {"email": None, "nombre": None, "cedula": None}, content_type=JSON
+    )
+    assert resp.status_code == 200, resp.content
+    datos = resp.json()
+    assert (datos["email"], datos["cedula"]) == ("otro@example.com", None)
+
+
+def test_login_del_admin_limita_los_intentos(client, crear_usuario):
+    crear_usuario(email="admin@example.com", is_staff=True)
+    url = "/admin/login/?next=/admin/"
+    for _ in range(5):
+        resp = client.post(url, {"username": "admin@example.com", "password": "mal"})
+        assert resp.status_code == 200  # formulario con error
+    # Superado el límite de allauth (5 por email), ni la contraseña correcta entra.
+    resp = client.post(url, {"username": "admin@example.com", "password": "clave-segura-123"})
+    assert resp.status_code == 200
+    assert "_auth_user_id" not in client.session
+
+
+def test_login_del_admin_funciona(client, crear_usuario):
+    crear_usuario(email="admin@example.com", is_staff=True)
+    resp = client.post(
+        "/admin/login/?next=/admin/",
+        {"username": "admin@example.com", "password": "clave-segura-123"},
+    )
+    assert resp.status_code == 302 and resp["Location"] == "/admin/"
+
+
+def test_ip_del_cliente_detras_de_traefik_y_caddy(rf, settings):
+    """Con TRUSTED_PROXY_COUNT=2, allauth limita por la IP del cliente, no la de Caddy."""
+    from allauth.core.internal.httpkit import get_client_ip
+
+    settings.ALLAUTH_TRUSTED_PROXY_COUNT = 2
+    # Cabecera falsificada por el cliente, su IP (añadida por Traefik) y la de Traefik (Caddy).
+    request = rf.post(
+        "/api/auth/browser/v1/auth/login",
+        HTTP_X_FORWARDED_FOR="1.2.3.4, 203.0.113.7, 10.0.1.5",
+        REMOTE_ADDR="10.0.1.6",
+    )
+    assert get_client_ip(request) == "203.0.113.7"

@@ -11,6 +11,16 @@ from apps.assets.models import Equipo
 from apps.catalogs.models import EstadoEquipo, Marca, TipoEquipo, TipoTrabajo, Urgencia, Zona
 
 
+@pytest.fixture(autouse=True)
+def cache_limpia():
+    """Los límites de intentos de allauth viven en la caché: que no pasen de un test a otro."""
+    from django.core.cache import cache
+
+    cache.clear()
+    yield
+    cache.clear()
+
+
 @pytest.fixture
 def roles(db):
     call_command("sync_roles", verbosity=0)

@@ -128,12 +128,14 @@ def _sede_y_jornada() -> tuple[Configuracion, tuple[float, float], int]:
 
 
 def _geometria(puntos: list[tuple[float, float]]) -> list[list[float]]:
-    """Trazado por calles, con caché de 6 horas (OSRM es determinista)."""
+    """Trazado por calles, con caché de 6 horas (OSRM es determinista). La línea
+    recta de respaldo no se guarda: en cuanto OSRM responda, se usa el trazado real."""
     clave = "ruta:" + hashlib.sha1(json.dumps(puntos).encode()).hexdigest()
     geometria = cache.get(clave)
     if geometria is None:
-        geometria = geometria_ruta(puntos)
-        cache.set(clave, geometria, 6 * 3600)
+        geometria, por_calles = geometria_ruta(puntos)
+        if por_calles:
+            cache.set(clave, geometria, 6 * 3600)
     return geometria
 
 
