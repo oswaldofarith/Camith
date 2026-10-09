@@ -149,6 +149,11 @@ services:
       context: ./deploy
       dockerfile: caddy.Dockerfile
     restart: unless-stopped
+    # Puerto al que Coolify dirige el tráfico (loadbalancer.server.port). Sin
+    # esto Traefik lo adivina entre los que declara la imagen de Caddy (80, 443
+    # y 2019, la API de administración) y puede quedarse sin destino válido.
+    expose:
+      - "80"
     environment:
       - SERVICE_URL_WEB
       - DOMAIN=:80
