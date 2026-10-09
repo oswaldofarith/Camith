@@ -31,9 +31,7 @@ function FormularioLogin() {
       await iniciarSesion(String(datos.get("email")), String(datos.get("password")));
       // Se descarta el usuario en caché para que el layout espere al nuevo.
       queryClient.removeQueries({ queryKey: CLAVE_ME });
-      const destino = params.get("next");
-      // Solo rutas internas, para evitar redirecciones abiertas.
-      router.replace(destino?.startsWith("/") && !destino.startsWith("//") ? destino : "/dashboard");
+      router.replace(destinoInterno(params.get("next")));
     } catch (err) {
       setError((err as Error).message);
       setEnviando(false);
@@ -69,6 +67,21 @@ function FormularioLogin() {
       </Button>
     </form>
   );
+}
+
+/**
+ * Solo rutas de esta misma web, para evitar redirecciones abiertas. Se resuelve
+ * como lo haría el navegador: "/\otro.com" o "//otro.com" apuntan a otro dominio.
+ */
+function destinoInterno(next: string | null): string {
+  if (!next) return "/dashboard";
+  try {
+    const url = new URL(next, window.location.origin);
+    if (url.origin === window.location.origin) return url.pathname + url.search + url.hash;
+  } catch {
+    // URL inválida: se ignora.
+  }
+  return "/dashboard";
 }
 
 export default function LoginPage() {

@@ -6,6 +6,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from ninja import Router
+from ninja.errors import HttpError
 from ninja.pagination import PageNumberPagination, paginate
 from ninja.responses import Status
 
@@ -100,7 +101,10 @@ def listar_equipos(
     if q:
         qs = qs.filter(Q(codigo__icontains=q) | Q(direccion__icontains=q))
     if bbox:
-        oeste, sur, este, norte = (float(v) for v in bbox.split(","))
+        try:
+            oeste, sur, este, norte = (float(v) for v in bbox.split(","))
+        except ValueError:
+            raise HttpError(400, "bbox debe ser oeste,sur,este,norte (cuatro números).") from None
         qs = qs.filter(ubicacion__within=Polygon.from_bbox((oeste, sur, este, norte)))
     if cerca_lat is not None and cerca_lng is not None:
         punto = Point(cerca_lng, cerca_lat, srid=4326)

@@ -47,6 +47,8 @@ services:
       DATABASE_URL: postgis://${POSTGRES_USER:-camith}:${SERVICE_PASSWORD_POSTGRES}@db:5432/${POSTGRES_DB:-camith}
       REDIS_URL: redis://redis:6379/0
       CACHE_URL: redis://redis:6379/1
+      # Traefik (Coolify) y Caddy: para que el límite de intentos de login sea por cliente.
+      TRUSTED_PROXY_COUNT: "2"
       OSRM_URL: http://osrm:5000
       DJANGO_SECRET_KEY: ${SERVICE_BASE64_64_DJANGO}
       DJANGO_ALLOWED_HOSTS: ${SERVICE_FQDN_WEB},backend,localhost

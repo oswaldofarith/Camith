@@ -150,7 +150,10 @@ def crear_usuario(request, payload: UsuarioIn):
 def editar_usuario(request, user_id: int, payload: UsuarioPatch):
     exigir_permiso(request, "accounts.change_user")
     user = get_object_or_404(User, pk=user_id)
-    datos = payload.dict(exclude_unset=True)
+    # null en un campo obligatorio = no cambiarlo; la cédula sí se puede vaciar.
+    datos = {
+        k: v for k, v in payload.dict(exclude_unset=True).items() if v is not None or k == "cedula"
+    }
     perfiles = datos.pop("perfiles", None)
     habilidades = datos.pop("habilidades", None)
     se_quita_admin = (

@@ -16,7 +16,6 @@ from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date, datetime, time
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 import httpx
 from django.contrib.gis.geos import Point
@@ -345,12 +344,6 @@ class Importador:
         ):
             if entero(ajustes.get(origen)) is not None:
                 setattr(c, destino, entero(ajustes[origen]))
-        if ajustes.get("timezone"):
-            try:
-                ZoneInfo(ajustes["timezone"])
-                c.zona_horaria = ajustes["timezone"]
-            except (KeyError, ValueError):
-                pass
         c.save()
         self.informe.creados["configuración"] += 1
 

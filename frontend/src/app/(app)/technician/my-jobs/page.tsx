@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { es } from "date-fns/locale";
 import { CheckCircle2, Loader2, Navigation, XCircle } from "lucide-react";
 import { useState } from "react";
@@ -116,12 +116,17 @@ function TarjetaTrabajo({ trabajo }: { trabajo: Trabajo }) {
   );
 }
 
+/** Fuera de "Pendientes" solo se cargan las órdenes recientes: el historial crece sin límite. */
+const DIAS_HISTORIAL = 30;
+
 export default function MisTrabajosPage() {
   const [vista, setVista] = useState<Vista>("pendientes");
   const estados = { pendientes: ["Pendiente"], reportados: ["Completado", "No Completado"], todos: [] as string[] }[vista];
+  const desde = vista === "pendientes" ? undefined : format(subDays(new Date(), DIAS_HISTORIAL), "yyyy-MM-dd");
   const trabajos = useQuery({
     queryKey: ["trabajos", "mios", vista],
-    queryFn: () => unwrap(api.GET("/api/trabajos/mios", { params: { query: { estado: estados.length ? estados : undefined } } })),
+    queryFn: () =>
+      unwrap(api.GET("/api/trabajos/mios", { params: { query: { estado: estados.length ? estados : undefined, desde } } })),
     refetchInterval: 60_000,
   });
 
@@ -139,6 +144,9 @@ export default function MisTrabajosPage() {
           <TabsTrigger value="todos">Todos</TabsTrigger>
         </TabsList>
       </Tabs>
+      {vista !== "pendientes" && (
+        <p className="text-muted-foreground -mt-2 mb-4 text-xs">Órdenes de los últimos {DIAS_HISTORIAL} días.</p>
+      )}
       {trabajos.isPending ? (
         <Cargando />
       ) : trabajos.isError ? (

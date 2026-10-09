@@ -120,6 +120,10 @@ ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_LOGIN_BY_CODE_ENABLED = False
 ACCOUNT_PASSWORD_RESET_BY_CODE_ENABLED = False
+# Proxies delante de Django (Traefik de Coolify y Caddy = 2; solo Caddy = 1). Sin
+# esto allauth toma la IP de Caddy como la del cliente y sus límites "por IP"
+# (intentos de login, recuperación de contraseña) se comparten entre todos.
+ALLAUTH_TRUSTED_PROXY_COUNT = env.int("TRUSTED_PROXY_COUNT", default=0)
 HEADLESS_ONLY = True
 HEADLESS_CLIENTS = ("browser",)
 HEADLESS_FRONTEND_URLS = {

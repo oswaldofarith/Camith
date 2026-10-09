@@ -5,6 +5,7 @@ from django.contrib.gis.geos import Point
 from django.shortcuts import get_object_or_404
 from ninja import Router, Schema
 from ninja.responses import Status
+from pydantic import Field
 
 from apps.core.permisos import exigir_permiso
 from apps.core.schemas import Punto
@@ -98,8 +99,8 @@ class LocalidadOut(Schema):
 
 class LocalidadIn(Schema):
     nombre: str
-    lat: float
-    lng: float
+    lat: float = Field(ge=-90, le=90)
+    lng: float = Field(ge=-180, le=180)
 
 
 class ConfiguracionSchema(Schema):
@@ -115,7 +116,6 @@ class ConfiguracionSchema(Schema):
     minutos_almuerzo: int = 60
     hora_inicio_almuerzo: time | None = None
     hora_fin_almuerzo: time | None = None
-    zona_horaria: str = "America/Guayaquil"
 
 
 def _config_out(config: models.Configuracion) -> ConfiguracionSchema:

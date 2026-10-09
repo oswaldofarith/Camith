@@ -79,8 +79,8 @@ def matriz_tiempos(puntos: list[Punto]) -> Matriz:
     return _estimar(puntos)
 
 
-def geometria_ruta(puntos: list[Punto]) -> list[list[float]]:
-    """Trazado por calles como [[lng, lat], ...]; en línea recta si no hay OSRM."""
+def geometria_ruta(puntos: list[Punto]) -> tuple[list[list[float]], bool]:
+    """Trazado como [[lng, lat], ...] y si va por calles (OSRM) o en línea recta."""
     url = getattr(settings, "OSRM_URL", "")
     if url and len(puntos) > 1:
         try:
@@ -92,7 +92,7 @@ def geometria_ruta(puntos: list[Punto]) -> list[list[float]]:
             r.raise_for_status()
             datos = r.json()
             if datos.get("code") == "Ok":
-                return datos["routes"][0]["geometry"]["coordinates"]
+                return datos["routes"][0]["geometry"]["coordinates"], True
         except (httpx.HTTPError, ValueError, KeyError, IndexError) as e:
             log.warning("OSRM no disponible para trazar la ruta (%s).", e)
-    return [[lng, lat] for lat, lng in puntos]
+    return [[lng, lat] for lat, lng in puntos], False

@@ -4323,11 +4323,6 @@
               }
             ],
             "title": "Hora Fin Almuerzo"
-          },
-          "zona_horaria": {
-            "default": "America/Guayaquil",
-            "title": "Zona Horaria",
-            "type": "string"
           }
         },
         "title": "ConfiguracionSchema",
@@ -4392,10 +4387,14 @@
       "Punto": {
         "properties": {
           "lat": {
+            "maximum": 90,
+            "minimum": -90,
             "title": "Lat",
             "type": "number"
           },
           "lng": {
+            "maximum": 180,
+            "minimum": -180,
             "title": "Lng",
             "type": "number"
           }
@@ -4550,10 +4549,14 @@
             "type": "string"
           },
           "lat": {
+            "maximum": 90,
+            "minimum": -90,
             "title": "Lat",
             "type": "number"
           },
           "lng": {
+            "maximum": 180,
+            "minimum": -180,
             "title": "Lng",
             "type": "number"
           }
