@@ -137,7 +137,7 @@ services:
     depends_on:
       - backend
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/').then(r => process.exit(r.status < 500 ? 0 : 1), () => process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.status < 500 ? 0 : 1), () => process.exit(1))"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -163,7 +163,10 @@ services:
         condition: service_healthy
     healthcheck:
       # API de administración de Caddy: no depende del backend ni del frontend.
-      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:2019/config/"]
+      # 127.0.0.1 y no localhost: con IPv6, localhost puede resolver a ::1 y la
+      # API solo escucha en IPv4; el healthcheck fallaría y Traefik (Coolify)
+      # dejaría de enrutar al contenedor ("No available server").
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:2019/config/"]
       interval: 10s
       timeout: 5s
       retries: 5
